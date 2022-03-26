@@ -149,6 +149,7 @@ ExtDefList : ExtDef ExtDefList
 ExtDef : Specifier ExtDecList SEMI
     | Specifier SEMI
     | Specifier FunDec CompSt
+    | Specifier FunDec SEMI
     | Specifier error CompSt {yyerrok;}
     | error Specifier FunDec CompSt {yyerrok;}
     | error SEMI {yyerrok;}
