@@ -1,0 +1,531 @@
+?13?Error type A at Line 1: Mysterious characters ''
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56e340 257 2 "invalid token"
+0x55accd56e340 257 2 "invalid token"
+
+line: 1
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56e3b0 0 0 "end of file"
+0x55accd56e340 257 2 "invalid token"
+
+line: 1
+
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56e420 0 0 "end of file"
+0x55accd56e490 270 15 TYPE
+
+line: 1
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56e500 0 0 "end of file"
+0x55accd56e570 284 29 ID
+
+line: 1
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56e5e0 0 0 "end of file"
+0x55accd56e650 271 16 LP
+
+line: 1
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56e6c0 0 0 "end of file"
+0x55accd56e730 272 17 RP
+
+line: 1
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56e7a0 0 0 "end of file"
+0x55accd56e810 275 20 LC
+
+line: 1
+?13?
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56e880 0 0 "end of file"
+0x55accd56e8f0 257 2 "invalid token"
+
+line: 1
+
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56e960 0 0 "end of file"
+0x55accd56e9d0 270 15 TYPE
+
+line: 1
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56ea40 0 0 "end of file"
+0x55accd56eab0 284 29 ID
+
+line: 1
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56eb20 0 0 "end of file"
+0x55accd56eb90 273 18 LB
+
+line: 1
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56ec00 0 0 "end of file"
+0x55accd56ec70 282 27 INT
+
+line: 1
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56ece0 0 0 "end of file"
+0x55accd56ed50 274 19 RB
+
+line: 1
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56edc0 0 0 "end of file"
+0x55accd56ee30 273 18 LB
+
+line: 1
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56eea0 0 0 "end of file"
+0x55accd56ef10 282 27 INT
+
+line: 1
+
+symbol: 31 $accept
+
+token pos: 1 1
+0x55accd56ef80 0 0 "end of file"
+0x55accd56eff0 274 19 RB
+
+line: 1
+
+symbol: 34 ExtDef
+
+token pos: 1 1
+0x55accd56f060 0 0 "end of file"
+0x55accd56f0d0 261 6 SEMI
+
+line: 1
+?13?
+symbol: 31 $accept
+
+token pos: 3 17
+0x55accd56f1b0 257 2 "invalid token"
+0x55accd56f1b0 257 2 "invalid token"
+
+line: 3
+
+symbol: 31 $accept
+
+token pos: 3 17
+0x55accd56f220 0 0 "end of file"
+0x55accd56f1b0 257 2 "invalid token"
+
+line: 3
+
+
+symbol: 31 $accept
+
+token pos: 3 17
+0x55accd56f290 0 0 "end of file"
+0x55accd56f300 270 15 TYPE
+
+line: 3
+
+symbol: 31 $accept
+
+token pos: 3 17
+0x55accd56f370 0 0 "end of file"
+0x55accd56f3e0 284 29 ID
+
+line: 3
+
+symbol: 34 ExtDef
+
+token pos: 3 17
+0x55accd56f450 0 0 "end of file"
+0x55accd56f4c0 261 6 SEMI
+
+line: 3
+?13?
+symbol: 31 $accept
+
+token pos: 4 8
+0x55accd56f5a0 257 2 "invalid token"
+0x55accd56f5a0 257 2 "invalid token"
+
+line: 4
+
+symbol: 31 $accept
+
+token pos: 4 8
+0x55accd56f610 0 0 "end of file"
+0x55accd56f5a0 257 2 "invalid token"
+
+line: 4
+
+
+symbol: 31 $accept
+
+token pos: 4 8
+0x55accd56f680 0 0 "end of file"
+0x55accd56f6f0 284 29 ID
+
+line: 4
+
+symbol: 31 $accept
+
+token pos: 4 8
+0x55accd56f760 0 0 "end of file"
+0x55accd56f7d0 273 18 LB
+
+line: 4
+
+symbol: 31 $accept
+
+token pos: 4 8
+0x55accd56f840 0 0 "end of file"
+0x55accd56f8b0 282 27 INT
+
+line: 4
+
+symbol: 31 $accept
+
+token pos: 4 8
+0x55accd56f920 0 0 "end of file"
+0x55accd56f990 262 7 COMMA
+
+line: 4
+
+symbol: 31 $accept
+
+token pos: 4 8
+0x55accd56fa00 0 0 "end of file"
+0x55accd56fa70 274 19 RB
+
+line: 4
+
+symbol: 31 $accept
+
+token pos: 4 8
+0x55accd56fae0 0 0 "end of file"
+0x55accd56fb50 263 8 ASSIGNOP
+
+line: 4
+
+symbol: 31 $accept
+
+token pos: 4 8
+0x55accd56fbc0 0 0 "end of file"
+0x55accd56fc30 283 28 FLOAT
+
+line: 4
+
+symbol: 34 ExtDef
+
+token pos: 4 8
+0x55accd56fca0 0 0 "end of file"
+0x55accd56fd10 261 6 SEMI
+
+line: 4
+?13?
+symbol: 31 $accept
+
+token pos: 5 14
+0x55accd56fdf0 257 2 "invalid token"
+0x55accd56fdf0 257 2 "invalid token"
+
+line: 5
+
+symbol: 31 $accept
+
+token pos: 5 14
+0x55accd56fe60 0 0 "end of file"
+0x55accd56fdf0 257 2 "invalid token"
+
+line: 5
+
+
+symbol: 34 ExtDef
+
+token pos: 5 14
+0x55accd56fed0 0 0 "end of file"
+0x55accd56ff40 261 6 SEMI
+
+line: 5
+?13?
+symbol: 31 $accept
+
+token pos: 6 3
+0x55accd570020 257 2 "invalid token"
+0x55accd570020 257 2 "invalid token"
+
+line: 6
+
+symbol: 31 $accept
+
+token pos: 6 3
+0x55accd570090 0 0 "end of file"
+0x55accd570020 257 2 "invalid token"
+
+line: 6
+
+
+symbol: 31 $accept
+
+token pos: 6 3
+0x55accd570100 0 0 "end of file"
+0x55accd570170 266 11 STAR
+
+line: 6
+
+symbol: 34 ExtDef
+
+token pos: 6 3
+0x55accd5701e0 0 0 "end of file"
+0x55accd570250 261 6 SEMI
+
+line: 6
+?13?
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd570330 257 2 "invalid token"
+0x55accd570330 257 2 "invalid token"
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd5703a0 0 0 "end of file"
+0x55accd570330 257 2 "invalid token"
+
+line: 7
+
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd570410 0 0 "end of file"
+0x55accd570480 279 24 IF
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd5704f0 0 0 "end of file"
+0x55accd570560 271 16 LP
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd5705d0 0 0 "end of file"
+0x55accd570640 284 29 ID
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd5706b0 0 0 "end of file"
+0x55accd570720 273 18 LB
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd570790 0 0 "end of file"
+0x55accd570800 282 27 INT
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd570870 0 0 "end of file"
+0x55accd5708e0 274 19 RB
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd570950 0 0 "end of file"
+0x55accd5709c0 273 18 LB
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd570a30 0 0 "end of file"
+0x55accd570aa0 282 27 INT
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd570b10 0 0 "end of file"
+0x55accd570b80 274 19 RB
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd570bf0 0 0 "end of file"
+0x55accd570c60 258 3 RELOP
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd570cd0 0 0 "end of file"
+0x55accd570d40 282 27 INT
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd570db0 0 0 "end of file"
+0x55accd570e20 272 17 RP
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd570e90 0 0 "end of file"
+0x55accd570f00 284 29 ID
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd570f70 0 0 "end of file"
+0x55accd570fe0 263 8 ASSIGNOP
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd571050 0 0 "end of file"
+0x55accd5710c0 282 27 INT
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd571130 0 0 "end of file"
+0x55accd5711a0 280 25 ELSE
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd571210 0 0 "end of file"
+0x55accd571280 284 29 ID
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd5712f0 0 0 "end of file"
+0x55accd571360 263 8 ASSIGNOP
+
+line: 7
+
+symbol: 31 $accept
+
+token pos: 7 4
+0x55accd5713d0 0 0 "end of file"
+0x55accd571440 282 27 INT
+
+line: 7
+
+symbol: 34 ExtDef
+
+token pos: 7 4
+0x55accd5714b0 0 0 "end of file"
+0x55accd571520 261 6 SEMI
+
+line: 7
+?13?
+symbol: 31 $accept
+
+token pos: 8 37
+0x55accd571600 257 2 "invalid token"
+0x55accd571600 257 2 "invalid token"
+
+line: 8
+
+symbol: 31 $accept
+
+token pos: 8 37
+0x55accd571670 0 0 "end of file"
+0x55accd571600 257 2 "invalid token"
+
+line: 8
+
+
+symbol: 31 $accept
+
+token pos: 8 37
+0x55accd5716e0 0 0 "end of file"
+0x55accd571750 276 21 RC
+
+line: 8
+?13?
+symbol: 31 $accept
+
+token pos: 8 37
+0x55accd5717c0 0 0 "end of file"
+0x55accd571830 257 2 "invalid token"
+
+line: 8
+
+parsed over with 1 lexical errors and 0 syntax errors

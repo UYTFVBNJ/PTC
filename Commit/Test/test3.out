@@ -1,0 +1,202 @@
+
+symbol: 36 Specifier
+
+token pos: 1 1
+0x564df17b9330 270 15 TYPE
+
+line: 1
+
+symbol: 41 FunDec
+
+token pos: 1 5
+0x564df17ba420 284 29 ID
+0x564df17ba490 271 16 LP
+0x564df17ba500 272 17 RP
+
+line: 1
+
+
+
+symbol: 36 Specifier
+
+token pos: 3 5
+0x564df17ba650 270 15 TYPE
+
+line: 3
+
+symbol: 40 VarDec
+
+token pos: 3 9
+0x564df17ba730 284 29 ID
+
+line: 3
+
+symbol: 50 Dec
+
+token pos: 3 9
+0x564df17ba7a0 0 0 "end of file"
+
+line: 3
+
+symbol: 49 DecList
+
+token pos: 3 9
+0x564df17ba880 0 0 "end of file"
+
+line: 3
+
+symbol: 48 Def
+
+token pos: 3 5
+0x564df17ba6c0 0 0 "end of file"
+0x564df17ba8f0 0 0 "end of file"
+0x564df17ba810 261 6 SEMI
+
+line: 3
+
+
+symbol: 47 DefList
+
+line: 3
+
+symbol: 47 DefList
+
+token pos: 3 5
+0x564df17ba960 0 0 "end of file"
+0x564df17baa40 -2 2 "invalid token"
+
+line: 3
+
+symbol: 51 Exp
+
+token pos: 4 5
+0x564df17ba9d0 284 29 ID
+
+line: 4
+
+symbol: 51 Exp
+
+token pos: 4 9
+0x564df17bac00 284 29 ID
+
+line: 4
+
+symbol: 51 Exp
+
+token pos: 4 13
+0x564df17bad50 282 27 INT
+
+line: 4
+
+symbol: 51 Exp
+
+token pos: 4 9
+0x564df17bace0 0 0 "end of file"
+0x564df17bac70 264 9 PLUS
+0x564df17badc0 0 0 "end of file"
+
+line: 4
+
+symbol: 51 Exp
+
+token pos: 4 5
+0x564df17bab90 0 0 "end of file"
+0x564df17bab20 263 8 ASSIGNOP
+0x564df17baea0 0 0 "end of file"
+
+line: 4
+
+symbol: 46 Stmt
+
+token pos: 4 5
+0x564df17baf10 0 0 "end of file"
+0x564df17bae30 261 6 SEMI
+
+line: 4
+
+
+symbol: 45 StmtList
+
+line: 4
+
+symbol: 45 StmtList
+
+token pos: 4 5
+0x564df17baf80 0 0 "end of file"
+0x564df17bb060 -2 2 "invalid token"
+
+line: 4
+
+symbol: 44 CompSt
+
+token pos: 2 1
+0x564df17ba5e0 275 20 LC
+0x564df17baab0 0 0 "end of file"
+0x564df17bb0d0 0 0 "end of file"
+0x564df17baff0 276 21 RC
+
+line: 2
+
+symbol: 34 ExtDef
+
+token pos: 1 1
+0x564df17ba3b0 0 0 "end of file"
+0x564df17ba570 0 0 "end of file"
+0x564df17bb140 0 0 "end of file"
+
+line: 1
+
+symbol: 33 ExtDefList
+
+line: 5
+
+symbol: 33 ExtDefList
+
+token pos: 1 1
+0x564df17bb1b0 0 0 "end of file"
+0x564df17bb220 -2 2 "invalid token"
+
+line: 1
+
+symbol: 32 Program
+
+token pos: 1 1
+0x564df17bb290 0 0 "end of file"
+
+line: 1
+parsed successfully!
+Program (1)
+  ExtDefList (1)
+    ExtDef (1)
+      Specifier (1)
+        TYPE: int
+      FunDec (1)
+        ID: inc
+        LP
+        RP
+      CompSt (2)
+        LC
+        DefList (3)
+          Def (3)
+            Specifier (3)
+              TYPE: int
+            DecList (3)
+              Dec (3)
+                VarDec (3)
+                  ID: i
+            SEMI
+        StmtList (4)
+          Stmt (4)
+            Exp (4)
+              Exp (4)
+                ID: i
+              ASSIGNOP
+              Exp (4)
+                Exp (4)
+                  ID: i
+                PLUS
+                Exp (4)
+                  INT: 1
+            SEMI
+        RC
+parsed over with 0 lexical errors and 0 syntax errors
