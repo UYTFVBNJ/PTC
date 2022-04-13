@@ -1,7 +1,7 @@
 // https://www.gnu.org/software/bison/manual/html_node/Location-Type.html
 
-#ifndef TOKEN
-#define TOKEN
+#ifndef TOKEN_H
+#define TOKEN_H
 enum TYPES {
   TYPE_INT, //int
   TYPE_FLOAT, // float

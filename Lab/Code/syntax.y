@@ -12,6 +12,7 @@
 #include "common.h"
 #include "Token.h"
 #include "STree.h"
+#include "SDT.h"
 int yylex(void);
 int yyerror(char * msg);
 extern int yylineno;
@@ -38,7 +39,7 @@ STnode_t *root = NULL;
 # define YYLLOC_DEFAULT(Cur, Rhs, N)                      \
  /*     printf("\nsymbol: %d %s\n", yyr1[yyn], yytname[yyr1[yyn]));                               */  \
 do {                                                      \
-  root = (STnode_t *)malloc(sizeof(STnode_t));              \
+  root = STreeNewNode();              \
   if (N)                                                  \
     {                                                     \
   /*  printf("\ntoken pos: %d %d\n", YYRHSLOC(Rhs, 1).first_line, YYRHSLOC(Rhs, 1).first_column);            */                     \
@@ -81,6 +82,11 @@ do {                                                      \
 while (0)
 
 #include "lex.yy.c"
+%}
+
+%{
+#include "TYPE.h"
+extern Type type_int, type_float;
 %}
 
 // %union {
@@ -128,7 +134,6 @@ while (0)
 %left MINUS PLUS
 %left DIV   STAR
 
- /* TODO: level 2 %right MINUS e.g. -a */
 %right NOT 
 
 %left DOT LB RB LP RP
@@ -141,7 +146,7 @@ while (0)
 %%
 
  /* High-level Definitions */
-Program : ExtDefList
+Program : ExtDefList {/*SDTProgram(@$.STnode);*/}
     ;
 ExtDefList : ExtDef ExtDefList
     |
@@ -225,7 +230,7 @@ Dec : VarDec
 // Calc : 
     // | Exp { printf("\n ANS = %lf\n", $1); }
     // ;
-Exp : Exp ASSIGNOP Exp
+Exp : Exp ASSIGNOP Exp {SDTExpASSIGNOPExp(@$.STnode);}
     | Exp AND Exp 
     | Exp OR Exp
     | Exp RELOP Exp 
@@ -247,9 +252,9 @@ Exp : Exp ASSIGNOP Exp
     | Exp LB error SEMI {yyerrok;}
     | Exp LB error RC {yyerrok;}
     | Exp DOT ID 
-    | ID 
-    | INT 
-    | FLOAT 
+    | ID {SDTID(@$.STnode);}
+    | INT {SDTINT_FLOAT(@$.STnode, type_int);}
+    | FLOAT {SDTFINT_LOAT(@$.STnode, type_float);}
     ;
 Args : Exp COMMA Args
     | Exp 

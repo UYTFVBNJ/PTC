@@ -1,6 +1,6 @@
-#line 1 "./lex.yy.c"
+#line 2 "./lex.yy.c"
 
-#line 3 "./lex.yy.c"
+#line 4 "./lex.yy.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -540,6 +540,7 @@ char *yytext;
 #line 3 "./lexical.l"
     #include "common.h"
     #include "syntax.tab.h"
+    #include "STree.h"
     int lexical_error = 0;    
     YYSTYPE yylval;
     int yycolumn = 1;
@@ -554,18 +555,18 @@ char *yytext;
         // printf(#TOKEN); 
     //   #endif     
     #define NOMAL_ACTION(TOKEN, SET_TI_VAL) \
-      STnode_t *Cur_STnode = yylloc.STnode = (STnode_t *)malloc(sizeof(STnode_t)); \
-         \
-        Cur_STnode->son = NULL;                          \
-        Cur_STnode->next = NULL;                          \
-        Cur_STnode->ti.token = TOKEN;\
-        Cur_STnode->ti.first_line = yylineno;\
-        SET_TI_VAL;\
-                                                        \
+      STnode_t *Cur_STnode = yylloc.STnode = STreeNewNode(); \
+                                                             \
+        Cur_STnode->son = NULL;                              \
+        Cur_STnode->next = NULL;                             \
+        Cur_STnode->ti.token = TOKEN;                        \
+        Cur_STnode->ti.first_line = yylineno;                \
+        SET_TI_VAL;                                          \
+                                                             \
       return TOKEN;
 
-#line 567 "./lex.yy.c"
-#line 568 "./lex.yy.c"
+#line 569 "./lex.yy.c"
+#line 570 "./lex.yy.c"
 
 #define INITIAL 0
 
@@ -782,11 +783,11 @@ YY_DECL
 		}
 
 	{
-#line 45 "./lexical.l"
+#line 46 "./lexical.l"
 
-#line 47 "./lexical.l"
+#line 48 "./lexical.l"
  /* RELOP */
-#line 789 "./lex.yy.c"
+#line 791 "./lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -855,7 +856,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 48 "./lexical.l"
+#line 49 "./lexical.l"
 { 
 NOMAL_ACTION(RELOP,)
 }
@@ -863,7 +864,7 @@ NOMAL_ACTION(RELOP,)
 /* AND */
 case 2:
 YY_RULE_SETUP
-#line 53 "./lexical.l"
+#line 54 "./lexical.l"
 {     
 NOMAL_ACTION(AND,)
 }
@@ -871,7 +872,7 @@ NOMAL_ACTION(AND,)
 /* OR */
 case 3:
 YY_RULE_SETUP
-#line 58 "./lexical.l"
+#line 59 "./lexical.l"
 { 
 NOMAL_ACTION(OR,)
 }
@@ -879,7 +880,7 @@ NOMAL_ACTION(OR,)
 /* SEMI */
 case 4:
 YY_RULE_SETUP
-#line 63 "./lexical.l"
+#line 64 "./lexical.l"
 { 
 NOMAL_ACTION(SEMI,)
 }
@@ -887,7 +888,7 @@ NOMAL_ACTION(SEMI,)
 /* COMMA */
 case 5:
 YY_RULE_SETUP
-#line 67 "./lexical.l"
+#line 68 "./lexical.l"
 { 
 NOMAL_ACTION(COMMA,)
 }
@@ -895,7 +896,7 @@ NOMAL_ACTION(COMMA,)
 /* ASSIGNOP */
 case 6:
 YY_RULE_SETUP
-#line 71 "./lexical.l"
+#line 72 "./lexical.l"
 { 
 NOMAL_ACTION(ASSIGNOP,)
 }
@@ -903,7 +904,7 @@ NOMAL_ACTION(ASSIGNOP,)
 /* PLUS */
 case 7:
 YY_RULE_SETUP
-#line 75 "./lexical.l"
+#line 76 "./lexical.l"
 { 
 NOMAL_ACTION(PLUS,)
 }
@@ -911,7 +912,7 @@ NOMAL_ACTION(PLUS,)
 /* MINUS */
 case 8:
 YY_RULE_SETUP
-#line 79 "./lexical.l"
+#line 80 "./lexical.l"
 { 
 NOMAL_ACTION(MINUS,)
 }
@@ -919,7 +920,7 @@ NOMAL_ACTION(MINUS,)
 /* STAR */
 case 9:
 YY_RULE_SETUP
-#line 83 "./lexical.l"
+#line 84 "./lexical.l"
 { 
 NOMAL_ACTION(STAR,)
 }
@@ -927,7 +928,7 @@ NOMAL_ACTION(STAR,)
 /* DIV */
 case 10:
 YY_RULE_SETUP
-#line 87 "./lexical.l"
+#line 88 "./lexical.l"
 { 
 NOMAL_ACTION(DIV,)
 }
@@ -935,7 +936,7 @@ NOMAL_ACTION(DIV,)
 /* DOT */
 case 11:
 YY_RULE_SETUP
-#line 91 "./lexical.l"
+#line 92 "./lexical.l"
 { 
 NOMAL_ACTION(DOT,)
 }
@@ -943,7 +944,7 @@ NOMAL_ACTION(DOT,)
 /* NOT */
 case 12:
 YY_RULE_SETUP
-#line 95 "./lexical.l"
+#line 96 "./lexical.l"
 { 
 NOMAL_ACTION(NOT,)
 }
@@ -951,14 +952,14 @@ NOMAL_ACTION(NOT,)
 /* TYPE */
 case 13:
 YY_RULE_SETUP
-#line 100 "./lexical.l"
+#line 101 "./lexical.l"
 { 
 NOMAL_ACTION(TYPE, Cur_STnode->ti.type_val = TYPE_INT)
 }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 104 "./lexical.l"
+#line 105 "./lexical.l"
 { 
 NOMAL_ACTION(TYPE, Cur_STnode->ti.type_val = TYPE_FLOAT)
 }
@@ -966,7 +967,7 @@ NOMAL_ACTION(TYPE, Cur_STnode->ti.type_val = TYPE_FLOAT)
 /* LP */
 case 15:
 YY_RULE_SETUP
-#line 109 "./lexical.l"
+#line 110 "./lexical.l"
 { 
 NOMAL_ACTION(LP,)
 }
@@ -974,7 +975,7 @@ NOMAL_ACTION(LP,)
 /* RP */
 case 16:
 YY_RULE_SETUP
-#line 113 "./lexical.l"
+#line 114 "./lexical.l"
 { 
 NOMAL_ACTION(RP,)
 }
@@ -982,7 +983,7 @@ NOMAL_ACTION(RP,)
 /* LB */
 case 17:
 YY_RULE_SETUP
-#line 118 "./lexical.l"
+#line 119 "./lexical.l"
 { 
 NOMAL_ACTION(LB,)
 }
@@ -990,7 +991,7 @@ NOMAL_ACTION(LB,)
 /* RB */
 case 18:
 YY_RULE_SETUP
-#line 122 "./lexical.l"
+#line 123 "./lexical.l"
 { 
 NOMAL_ACTION(RB,)
 }
@@ -998,7 +999,7 @@ NOMAL_ACTION(RB,)
 /* LC */
 case 19:
 YY_RULE_SETUP
-#line 127 "./lexical.l"
+#line 128 "./lexical.l"
 { 
 NOMAL_ACTION(LC,)
 }
@@ -1006,7 +1007,7 @@ NOMAL_ACTION(LC,)
 /* RC */
 case 20:
 YY_RULE_SETUP
-#line 131 "./lexical.l"
+#line 132 "./lexical.l"
 { 
 NOMAL_ACTION(RC,)
 }
@@ -1014,7 +1015,7 @@ NOMAL_ACTION(RC,)
 /* STRUCT */
 case 21:
 YY_RULE_SETUP
-#line 136 "./lexical.l"
+#line 137 "./lexical.l"
 { 
 NOMAL_ACTION(STRUCT,)
 }
@@ -1022,7 +1023,7 @@ NOMAL_ACTION(STRUCT,)
 /* RETURN */
 case 22:
 YY_RULE_SETUP
-#line 140 "./lexical.l"
+#line 141 "./lexical.l"
 { 
 NOMAL_ACTION(RETURN,)
 }
@@ -1030,7 +1031,7 @@ NOMAL_ACTION(RETURN,)
 /* IF */
 case 23:
 YY_RULE_SETUP
-#line 144 "./lexical.l"
+#line 145 "./lexical.l"
 { 
 NOMAL_ACTION(IF,)
 }
@@ -1038,7 +1039,7 @@ NOMAL_ACTION(IF,)
 /* ELSE */
 case 24:
 YY_RULE_SETUP
-#line 148 "./lexical.l"
+#line 149 "./lexical.l"
 { 
 NOMAL_ACTION(ELSE,)
 }
@@ -1046,7 +1047,7 @@ NOMAL_ACTION(ELSE,)
 /* WHILE */
 case 25:
 YY_RULE_SETUP
-#line 152 "./lexical.l"
+#line 153 "./lexical.l"
 { 
 NOMAL_ACTION(WHILE,)
 }
@@ -1054,7 +1055,7 @@ NOMAL_ACTION(WHILE,)
 /* INT */
 case 26:
 YY_RULE_SETUP
-#line 157 "./lexical.l"
+#line 158 "./lexical.l"
 { 
     yylval.int_val = strtol(yytext, NULL, 0);
 NOMAL_ACTION(INT, Cur_STnode->ti.int_val = yylval.int_val)
@@ -1065,7 +1066,7 @@ NOMAL_ACTION(INT, Cur_STnode->ti.int_val = yylval.int_val)
 /* [+-]?({digit}*\.?{digit}+|{digit}+\.) optional [+-] and . */
 case 27:
 YY_RULE_SETUP
-#line 165 "./lexical.l"
+#line 166 "./lexical.l"
 { 
     yylval.float_val = strtof(yytext, NULL); 
 NOMAL_ACTION(FLOAT, Cur_STnode->ti.float_val = yylval.float_val)
@@ -1075,7 +1076,7 @@ NOMAL_ACTION(FLOAT, Cur_STnode->ti.float_val = yylval.float_val)
 /* make sure Reserved Words is above ID */
 case 28:
 YY_RULE_SETUP
-#line 172 "./lexical.l"
+#line 173 "./lexical.l"
 { 
 NOMAL_ACTION(ID, strncpy(Cur_STnode->ti.id_val, yytext, 64))
 }
@@ -1083,7 +1084,7 @@ NOMAL_ACTION(ID, strncpy(Cur_STnode->ti.id_val, yytext, 64))
 /* White Space */
 case 29:
 YY_RULE_SETUP
-#line 177 "./lexical.l"
+#line 178 "./lexical.l"
 {
 }
 	YY_BREAK
@@ -1091,7 +1092,7 @@ YY_RULE_SETUP
 case 30:
 /* rule 30 can match eol */
 YY_RULE_SETUP
-#line 181 "./lexical.l"
+#line 182 "./lexical.l"
 {
 #ifdef LEXICAL_DEBUG
     printf("\n");
@@ -1102,7 +1103,7 @@ YY_RULE_SETUP
 /* // */
 case 31:
 YY_RULE_SETUP
-#line 189 "./lexical.l"
+#line 190 "./lexical.l"
 {
     while (input() != '\n');
 }
@@ -1111,7 +1112,7 @@ YY_RULE_SETUP
 case 32:
 /* rule 32 can match eol */
 YY_RULE_SETUP
-#line 194 "./lexical.l"
+#line 195 "./lexical.l"
 {
 
 }
@@ -1119,7 +1120,7 @@ YY_RULE_SETUP
 /* YYUNDEF */
 case 33:
 YY_RULE_SETUP
-#line 199 "./lexical.l"
+#line 200 "./lexical.l"
 { 
     lexical_error = 1;
 #ifdef LEXICAL_DEBUG
@@ -1130,10 +1131,10 @@ NOMAL_ACTION(LEXICAL_ERROR,)
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 207 "./lexical.l"
+#line 208 "./lexical.l"
 ECHO;
 	YY_BREAK
-#line 1136 "./lex.yy.c"
+#line 1138 "./lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2150,7 +2151,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 207 "./lexical.l"
+#line 208 "./lexical.l"
 
 
 

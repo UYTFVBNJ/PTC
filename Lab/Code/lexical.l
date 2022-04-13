@@ -2,6 +2,7 @@
 %{
     #include "common.h"
     #include "syntax.tab.h"
+    #include "STree.h"
     int lexical_error = 0;    
     YYSTYPE yylval;
     int yycolumn = 1;
@@ -16,14 +17,14 @@
         // printf(#TOKEN); 
     //   #endif     
     #define NOMAL_ACTION(TOKEN, SET_TI_VAL) \
-      STnode_t *Cur_STnode = yylloc.STnode = (STnode_t *)malloc(sizeof(STnode_t)); \
-         \
-        Cur_STnode->son = NULL;                          \
-        Cur_STnode->next = NULL;                          \
-        Cur_STnode->ti.token = TOKEN;\
-        Cur_STnode->ti.first_line = yylineno;\
-        SET_TI_VAL;\
-                                                        \
+      STnode_t *Cur_STnode = yylloc.STnode = STreeNewNode(); \
+                                                             \
+        Cur_STnode->son = NULL;                              \
+        Cur_STnode->next = NULL;                             \
+        Cur_STnode->ti.token = TOKEN;                        \
+        Cur_STnode->ti.first_line = yylineno;                \
+        SET_TI_VAL;                                          \
+                                                             \
       return TOKEN;
 
 %}
