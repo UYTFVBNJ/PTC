@@ -191,7 +191,7 @@ ParamDec : Specifier VarDec
     ;
 
  /* Statements */
-CompSt : LC DefList StmtList RC 
+CompSt : LC DefList StmtList RC { SDTSetHelper(CompSt_LCDefListStmtListRC); }
     | LC DefList error RC {yyerrok;}
     | error LC DefList StmtList RC {yyerrok;}
     ;
@@ -252,9 +252,9 @@ Exp : Exp ASSIGNOP Exp {SDTExpASSIGNOPExp(@$.STnode);}
     | Exp LB error SEMI {yyerrok;}
     | Exp LB error RC {yyerrok;}
     | Exp DOT ID 
-    | ID {SDTID(@$.STnode);}
-    | INT {SDTINT_FLOAT(@$.STnode, type_int);}
-    | FLOAT {SDTFINT_LOAT(@$.STnode, type_float);}
+    | ID {SDTExp_ID(@$.STnode);}
+    | INT {SDTExp_INT_FLOAT(@$.STnode, type_int);}
+    | FLOAT {SDTFExp_INT_LOAT(@$.STnode, type_float);}
     ;
 Args : Exp COMMA Args
     | Exp 

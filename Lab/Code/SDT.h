@@ -6,10 +6,10 @@
 #define MAX_STACK_DEPTH 1000
 
 typedef struct SDT_info_t {
+    char *name;
     Type type;
     int islval;
 } SDT_info_t;
-
 
 typedef struct STnode_t STnode_t;
 
@@ -24,119 +24,105 @@ void STAdd();
 
 void STLookup();
 
-#define SDTDefHelper(body) void SDT##body (STnode_t *STnode)
+#define SDTDefHelper(body) void SDT##body (STnode_t *STnode, STnode_t *Fa)
+#define SDTSetHelper(body) @$.SDT_handler = SDT##body
 
  /* High-level Definitions */
  /* Program */
-// SDTDefHelper(ExtDefList);
+SDTDefHelper(Program_ExtDefList);
 
  /* ExtDefList */
-// SDTDefHelper(ExtDef ExtDefList
+SDTDefHelper(ExtDefList_ExtDefExtDefList);
 
  /* ExtDef */
-// SDTDefHelper(Specifier ExtDecList SEMI
-// SDTDefHelper(Specifier SEMI
-// SDTDefHelper(Specifier FunDec CompSt
-// SDTDefHelper(Specifier FunDec SEMI
-// SDTDefHelper(Specifier error CompSt {yyerrok;}
-// SDTDefHelper(error Specifier FunDec CompSt {yyerrok;}
-// SDTDefHelper(error SEMI {yyerrok;}
+SDTDefHelper(ExtDef_SpecifierExtDecListSEMI);
+SDTDefHelper(ExtDef_SpecifierSEMI);
+SDTDefHelper(ExtDef_SpecifierFunDecCompSt);
+SDTDefHelper(ExtDef_SpecifierFunDecSEMI);
 
  /* ExtDecList */
-// SDTDefHelper(VarDec
-// SDTDefHelper(VarDec COMMA ExtDecList
+SDTDefHelper(ExtDecList_VarDec);
+SDTDefHelper(ExtDecList_VarDecCOMMAExtDecList);
 
 
  /* Specifiers */
  /* Specifier */
-// SDTDefHelper(TYPE
-// SDTDefHelper(StructSpecifier
+SDTDefHelper(Specifier_TYPE);
+SDTDefHelper(Specifier_StructSpecifier);
 
  /* StructSpecifier */
-// SDTDefHelper(STRUCT OptTag LC DefList RC
-// SDTDefHelper(STRUCT OptTag LC error RC {yyerrok;}
-// SDTDefHelper(STRUCT Tag;    
+SDTDefHelper(StructSpecifier_STRUCTOptTagLCDefListRC);
+SDTDefHelper(StructSpecifier_STRUCTTag);
  /* OptTag */
-// SDTDefHelper(ID
-// SDTDefHelper(
+SDTDefHelper(OptTag_ID);
+SDTDefHelper(OptTag_);
 
  /* Tag */
-// SDTDefHelper(ID;    
+SDTDefHelper(Tag_ID);
 
  /* Declarators */
  /* VarDec */
-// SDTDefHelper(ID
-// SDTDefHelper(VarDec LB INT RB
-// SDTDefHelper(VarDec LB error RB 
+SDTDefHelper(VarDec_ID);
+SDTDefHelper(VarDec_VarDecLBINTRB);
 
  /* FunDec */
-// SDTDefHelper(ID LP VarList RP 
-// SDTDefHelper(ID LP RP
-// SDTDefHelper(error RP {yyerrok;}
+SDTDefHelper(FunDec_IDLPVarListRP);
+SDTDefHelper(FunDec_IDLPRP);
 
  /* VarList */
-// SDTDefHelper(ParamDec COMMA VarList
-// SDTDefHelper(ParamDec
+SDTDefHelper(VarList_ParamDecCOMMAVarList);
+SDTDefHelper(VarList_ParamDec);
 
  /* ParamDec */
-// SDTDefHelper(Specifier VarDec
+SDTDefHelper(ParamDec_SpecifierVarDec);
 
  /* Statements */
  /* CompSt */
-// SDTDefHelper(LC DefList StmtList RC 
-// SDTDefHelper(LC DefList error RC {yyerrok;}
-// SDTDefHelper(error LC DefList StmtList RC {yyerrok;}
+SDTDefHelper(CompSt_LCDefListStmtListRC);
 
  /* StmtList */
-// SDTDefHelper(Stmt StmtList
+SDTDefHelper(StmtList_StmtStmtList);
 
  /* Stmt */
-// SDTDefHelper(Exp SEMI
-// SDTDefHelper(error SEMI {yyerrok;}
-// SDTDefHelper(CompSt 
-// SDTDefHelper(RETURN Exp SEMI 
-// SDTDefHelper(RETURN error SEMI {yyerrok;}
-// SDTDefHelper(IF LP Exp RP Stmt %prec LOWER_THAN_ELSE
-// SDTDefHelper(IF LP error RP Stmt %prec LOWER_THAN_ELSE 
-// SDTDefHelper(IF LP Exp RP Stmt ELSE Stmt 
-// SDTDefHelper(IF LP error RP Stmt ELSE Stmt 
-// SDTDefHelper(IF LP Exp RP error ELSE Stmt 
-// SDTDefHelper(WHILE LP Exp RP Stmt 
-// SDTDefHelper(WHILE LP error RP Stmt {yyerrok;}
+SDTDefHelper(Stmt_ExpSEMI);
+SDTDefHelper(Stmt_CompSt);
+SDTDefHelper(Stmt_RETURNExpSEMI);
+SDTDefHelper(Stmt_IFLPExpRPStmt);
+SDTDefHelper(Stmt_IFLPExpRPStmtELSEStmt);
+SDTDefHelper(Stmt_WHILELPExpRPStmt);
 
  /* Local Definitions */
  /* DefList */
-// SDTDefHelper(Def DefList
+SDTDefHelper(DefList_DefDefList);
 
  /* Def */
-// SDTDefHelper(Specifier DecList SEMI
-// SDTDefHelper(Specifier error SEMI {yyerrok;}
+SDTDefHelper(Def_SpecifierDecListSEMI);
 
  /* DecList */
-// SDTDefHelper(Dec 
-// SDTDefHelper(Dec COMMA DecList 
+SDTDefHelper(DecList_Dec);
+SDTDefHelper(DecList_DecCOMMADecList);
 
  /* Dec */
-// SDTDefHelper(VarDec);
-// SDTDefHelper(VarDec ASSIGNOP Exp);
+SDTDefHelper(Dec_VarDec);
+SDTDefHelper(Dec_VarDecASSIGNOPExp);
  
  /* Expressions */
  /* Exp */
-SDTDefHelper(ExpASSIGNOPExp);
-SDTDefHelper(ExpANDExp);
-SDTDefHelper(ExpPLUSExp);
-SDTDefHelper(LPExpRP);
-SDTDefHelper(MINUSExp);
-SDTDefHelper(NOTExp);
-SDTDefHelper(IDLPArgsRP);
-SDTDefHelper(IDLPRP);
-SDTDefHelper(ExpLBExpRB);
-SDTDefHelper(ExpDOTID);
-SDTDefHelper(ID);
-SDTDefHelper(INT);
-SDTDefHelper(FLOAT);
+SDTDefHelper(Exp_ExpASSIGNOPExp);
+SDTDefHelper(Exp_ExpLOGICExp);
+SDTDefHelper(Exp_ExpARITHMETICExp);
+SDTDefHelper(Exp_LPExpRP);
+SDTDefHelper(Exp_MINUSExp);
+SDTDefHelper(Exp_NOTExp);
+SDTDefHelper(Exp_IDLPArgsRP);
+SDTDefHelper(Exp_IDLPRP);
+SDTDefHelper(Exp_ExpLBExpRB);
+SDTDefHelper(Exp_ExpDOTID);
+SDTDefHelper(Exp_ID);
+SDTDefHelper(Exp_INT);
+SDTDefHelper(Exp_FLOAT);
  
  /* Args */
-SDTDefHelper(ExpCOMMAArgs);
-SDTDefHelper(Exp);
+SDTDefHelper(Args_ExpCOMMAArgs);
+SDTDefHelper(Args_Exp);
 #endif

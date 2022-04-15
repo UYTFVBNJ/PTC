@@ -6,10 +6,12 @@ extern int yydebug;
 int yyparse(void);
 int yylex(void);
 void STprint();
+void initSymbolTables();
 
 int num_lexical_error = 0, num_syntax_error = 0;
 
 int main(int argc, char** argv) {
+    initSymbolTables();
     if (argc > 1) {
         if (!(yyin = fopen(argv[1], "r"))) {
             perror(argv[1]);

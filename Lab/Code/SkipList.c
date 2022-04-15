@@ -27,7 +27,7 @@ void SLTearDown(SkipList_t* sl) {
     }
 }
 
-SkipListNode_t* SLNewNode(char *name, int type) {
+SkipListNode_t* SLNewNode(char *name, Type type) {
     SkipListNode_t* p = (SkipListNode_t*)malloc(sizeof(SkipListNode_t));
     assert(p != NULL);
     p->key = name;
@@ -40,7 +40,6 @@ SkipListNode_t* SLNewNode(char *name, int type) {
 SkipListNode_t* SLFindLE(SkipList_t* sl, char *name) {
     SkipListNode_t *p = &(sl->header[SkipListL - 1]);
     for (int i = SkipListL - 1; i >= 0; i --) {
-        // printf("%p %p\n", p, &(sl->header[14]));
         while (p->next && strcmp(p->next->key, name) <= 0) 
             p = p->next;
         tmp_LE[i] = p;
@@ -49,7 +48,7 @@ SkipListNode_t* SLFindLE(SkipList_t* sl, char *name) {
     return p;
 }
 
-int SLInsert(SkipList_t* sl, char *name, int type) {
+int SLInsert(SkipList_t* sl, char *name, Type type) {
     SkipListNode_t *p = SLFindLE(sl, name);
     assert(strcmp(p->key, name) <= 0);
     if (strcmp(p->key, name) == 0) {
@@ -58,7 +57,6 @@ int SLInsert(SkipList_t* sl, char *name, int type) {
     }
     for (int i = 0; i < SkipListL && (i == 0 || rand() % SkipListP == 0); i ++) {
         SkipListNode_t *np = SLNewNode(name, type);   
-        // printf("Insert %d %p %p\n", i, tmp_LE[i], sl->header[0]);
         np->next = tmp_LE[i]->next;
         if (i > 0)
             np->down = tmp_LE[i - 1]->next;
@@ -67,10 +65,10 @@ int SLInsert(SkipList_t* sl, char *name, int type) {
     return 1;
 }
 
-int SLLookup(SkipList_t* sl, char *name) {
+Type SLLookup(SkipList_t* sl, char *name) {
     SkipListNode_t *p = SLFindLE(sl, name);
     if (strcmp(p->key, name) == 0)
         return p->type;
     else 
-        return 0;
+        return NULL;
 }
