@@ -14,9 +14,10 @@ struct Func_ {
   char *name;
   Type args; // use Struct for args
   Type ret;
+  int addedVar;
 };
 
-enum { BASIC, ARRAY, STRUCTURE, STRUCTURE_DEF, FUNCTION };
+enum { BASIC, ARRAY, STRUCTURE, ARGS, FUNCTION };
 
 struct Type_ {
   int kind;
@@ -28,8 +29,8 @@ struct Type_ {
 // 结构体类型信息是一个链表
     FieldList structure;
 // 函数类型信息
-    struct Func_ function
-  } u;
+    struct Func_ function;
+  }u;
   int declineno, deflineno;
 };
 

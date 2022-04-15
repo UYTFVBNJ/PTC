@@ -5,8 +5,14 @@
 
 #define MAX_STACK_DEPTH 1000
 
+typedef struct NameList_t {
+    char *name;
+    struct NameList_t *next;
+} NameList_t;
+
 typedef struct SDT_info_t {
     char *name;
+    NameList_t *namelist;
     Type type;
     int islval;
 } SDT_info_t;
@@ -14,18 +20,9 @@ typedef struct SDT_info_t {
 typedef struct STnode_t STnode_t;
 
 
-void NewObj();
-
-void STPush();
-
-void STPop();
-
-void STAdd();
-
-void STLookup();
+void SDT_report();
 
 #define SDTDefHelper(body) void SDT##body (STnode_t *STnode, STnode_t *Fa)
-#define SDTSetHelper(body) @$.SDT_handler = SDT##body
 
  /* High-level Definitions */
  /* Program */
@@ -33,6 +30,7 @@ SDTDefHelper(Program_ExtDefList);
 
  /* ExtDefList */
 SDTDefHelper(ExtDefList_ExtDefExtDefList);
+SDTDefHelper(ExtDefList_);
 
  /* ExtDef */
 SDTDefHelper(ExtDef_SpecifierExtDecListSEMI);
@@ -82,6 +80,7 @@ SDTDefHelper(CompSt_LCDefListStmtListRC);
 
  /* StmtList */
 SDTDefHelper(StmtList_StmtStmtList);
+SDTDefHelper(StmtList_);
 
  /* Stmt */
 SDTDefHelper(Stmt_ExpSEMI);
@@ -94,6 +93,7 @@ SDTDefHelper(Stmt_WHILELPExpRPStmt);
  /* Local Definitions */
  /* DefList */
 SDTDefHelper(DefList_DefDefList);
+SDTDefHelper(DefList_);
 
  /* Def */
 SDTDefHelper(Def_SpecifierDecListSEMI);

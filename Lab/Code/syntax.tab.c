@@ -140,8 +140,12 @@ do {                                                      \
 while (0)
 
 #include "lex.yy.c"
+#line 87 "./syntax.y"
 
-#line 145 "./syntax.tab.c"
+#include "Type.h"
+extern Type type_int, type_float;
+
+#line 149 "./syntax.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -606,17 +610,17 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_uint8 yyrline[] =
+static const yytype_int16 yyrline[] =
 {
-       0,   144,   144,   146,   147,   149,   150,   151,   152,   153,
-     154,   155,   157,   158,   162,   163,   165,   166,   167,   168,
-     169,   171,   174,   175,   176,   178,   179,   180,   182,   183,
-     185,   189,   190,   191,   193,   194,   196,   197,   198,   199,
-     200,   201,   202,   203,   204,   205,   206,   207,   211,   212,
-     214,   215,   217,   218,   220,   221,   228,   229,   230,   231,
-     232,   233,   234,   235,   236,   237,   238,   239,   240,   241,
-     242,   243,   244,   245,   246,   247,   248,   249,   250,   251,
-     252,   254,   255
+       0,   149,   149,   151,   152,   154,   155,   156,   157,   158,
+     159,   160,   162,   163,   167,   168,   170,   171,   172,   174,
+     175,   177,   181,   182,   183,   185,   186,   187,   189,   190,
+     192,   196,   197,   198,   200,   201,   203,   204,   205,   206,
+     207,   208,   209,   210,   211,   212,   213,   214,   218,   219,
+     221,   222,   224,   225,   227,   228,   235,   236,   237,   238,
+     239,   240,   241,   242,   243,   244,   245,   246,   247,   248,
+     249,   250,   251,   252,   253,   254,   255,   256,   257,   258,
+     259,   261,   262
 };
 #endif
 
@@ -1431,127 +1435,451 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* Program: ExtDefList  */
-#line 144 "./syntax.y"
-                     {/*SDTProgram(@$.STnode);*/}
-#line 1437 "./syntax.tab.c"
+#line 149 "./syntax.y"
+                     {(yyloc).STnode->SDT_handler = SDTProgram_ExtDefList;}
+#line 1441 "./syntax.tab.c"
+    break;
+
+  case 3: /* ExtDefList: ExtDef ExtDefList  */
+#line 151 "./syntax.y"
+                               {(yyloc).STnode->SDT_handler = SDTExtDefList_ExtDefExtDefList;}
+#line 1447 "./syntax.tab.c"
+    break;
+
+  case 4: /* ExtDefList: %empty  */
+#line 152 "./syntax.y"
+      {(yyloc).STnode->SDT_handler = SDTExtDefList_;}
+#line 1453 "./syntax.tab.c"
+    break;
+
+  case 5: /* ExtDef: Specifier ExtDecList SEMI  */
+#line 154 "./syntax.y"
+                                    {(yyloc).STnode->SDT_handler = SDTExtDef_SpecifierExtDecListSEMI;}
+#line 1459 "./syntax.tab.c"
+    break;
+
+  case 6: /* ExtDef: Specifier SEMI  */
+#line 155 "./syntax.y"
+                      {(yyloc).STnode->SDT_handler = SDTExtDef_SpecifierSEMI;}
+#line 1465 "./syntax.tab.c"
+    break;
+
+  case 7: /* ExtDef: Specifier FunDec CompSt  */
+#line 156 "./syntax.y"
+                              {(yyloc).STnode->SDT_handler = SDTExtDef_SpecifierFunDecCompSt;}
+#line 1471 "./syntax.tab.c"
+    break;
+
+  case 8: /* ExtDef: Specifier FunDec SEMI  */
+#line 157 "./syntax.y"
+                            {(yyloc).STnode->SDT_handler = SDTExtDef_SpecifierFunDecSEMI;}
+#line 1477 "./syntax.tab.c"
     break;
 
   case 9: /* ExtDef: Specifier error CompSt  */
-#line 153 "./syntax.y"
+#line 158 "./syntax.y"
                              {yyerrok;}
-#line 1443 "./syntax.tab.c"
+#line 1483 "./syntax.tab.c"
     break;
 
   case 10: /* ExtDef: error Specifier FunDec CompSt  */
-#line 154 "./syntax.y"
+#line 159 "./syntax.y"
                                     {yyerrok;}
-#line 1449 "./syntax.tab.c"
+#line 1489 "./syntax.tab.c"
     break;
 
   case 11: /* ExtDef: error SEMI  */
-#line 155 "./syntax.y"
+#line 160 "./syntax.y"
                  {yyerrok;}
-#line 1455 "./syntax.tab.c"
+#line 1495 "./syntax.tab.c"
+    break;
+
+  case 12: /* ExtDecList: VarDec  */
+#line 162 "./syntax.y"
+                    {(yyloc).STnode->SDT_handler = SDTExtDecList_VarDec;}
+#line 1501 "./syntax.tab.c"
+    break;
+
+  case 13: /* ExtDecList: VarDec COMMA ExtDecList  */
+#line 163 "./syntax.y"
+                              {(yyloc).STnode->SDT_handler = SDTExtDecList_VarDecCOMMAExtDecList;}
+#line 1507 "./syntax.tab.c"
+    break;
+
+  case 14: /* Specifier: TYPE  */
+#line 167 "./syntax.y"
+                 {(yyloc).STnode->SDT_handler = SDTSpecifier_TYPE;}
+#line 1513 "./syntax.tab.c"
+    break;
+
+  case 15: /* Specifier: StructSpecifier  */
+#line 168 "./syntax.y"
+                      {(yyloc).STnode->SDT_handler = SDTSpecifier_StructSpecifier;}
+#line 1519 "./syntax.tab.c"
+    break;
+
+  case 16: /* StructSpecifier: STRUCT OptTag LC DefList RC  */
+#line 170 "./syntax.y"
+                                              {(yyloc).STnode->SDT_handler = SDTStructSpecifier_STRUCTOptTagLCDefListRC;}
+#line 1525 "./syntax.tab.c"
     break;
 
   case 17: /* StructSpecifier: STRUCT OptTag LC error RC  */
-#line 166 "./syntax.y"
+#line 171 "./syntax.y"
                                 {yyerrok;}
-#line 1461 "./syntax.tab.c"
+#line 1531 "./syntax.tab.c"
+    break;
+
+  case 18: /* StructSpecifier: STRUCT Tag  */
+#line 172 "./syntax.y"
+                 {(yyloc).STnode->SDT_handler = SDTStructSpecifier_STRUCTTag;}
+#line 1537 "./syntax.tab.c"
+    break;
+
+  case 19: /* OptTag: ID  */
+#line 174 "./syntax.y"
+            {(yyloc).STnode->SDT_handler = SDTOptTag_ID;}
+#line 1543 "./syntax.tab.c"
+    break;
+
+  case 20: /* OptTag: %empty  */
+#line 175 "./syntax.y"
+       {(yyloc).STnode->SDT_handler = SDTOptTag_;}
+#line 1549 "./syntax.tab.c"
+    break;
+
+  case 21: /* Tag: ID  */
+#line 177 "./syntax.y"
+         {(yyloc).STnode->SDT_handler = SDTTag_ID;}
+#line 1555 "./syntax.tab.c"
+    break;
+
+  case 22: /* VarDec: ID  */
+#line 181 "./syntax.y"
+            {(yyloc).STnode->SDT_handler = SDTVarDec_ID;}
+#line 1561 "./syntax.tab.c"
+    break;
+
+  case 23: /* VarDec: VarDec LB INT RB  */
+#line 182 "./syntax.y"
+                       {(yyloc).STnode->SDT_handler = SDTVarDec_VarDecLBINTRB;}
+#line 1567 "./syntax.tab.c"
+    break;
+
+  case 25: /* FunDec: ID LP VarList RP  */
+#line 185 "./syntax.y"
+                           {(yyloc).STnode->SDT_handler = SDTFunDec_IDLPVarListRP;}
+#line 1573 "./syntax.tab.c"
+    break;
+
+  case 26: /* FunDec: ID LP RP  */
+#line 186 "./syntax.y"
+               {(yyloc).STnode->SDT_handler = SDTFunDec_IDLPRP;}
+#line 1579 "./syntax.tab.c"
     break;
 
   case 27: /* FunDec: error RP  */
-#line 180 "./syntax.y"
+#line 187 "./syntax.y"
                {yyerrok;}
-#line 1467 "./syntax.tab.c"
+#line 1585 "./syntax.tab.c"
+    break;
+
+  case 28: /* VarList: ParamDec COMMA VarList  */
+#line 189 "./syntax.y"
+                                 {(yyloc).STnode->SDT_handler = SDTVarList_ParamDecCOMMAVarList;}
+#line 1591 "./syntax.tab.c"
+    break;
+
+  case 29: /* VarList: ParamDec  */
+#line 190 "./syntax.y"
+               {(yyloc).STnode->SDT_handler = SDTVarList_ParamDec;}
+#line 1597 "./syntax.tab.c"
+    break;
+
+  case 30: /* ParamDec: Specifier VarDec  */
+#line 192 "./syntax.y"
+                            {(yyloc).STnode->SDT_handler = SDTParamDec_SpecifierVarDec;}
+#line 1603 "./syntax.tab.c"
+    break;
+
+  case 31: /* CompSt: LC DefList StmtList RC  */
+#line 196 "./syntax.y"
+                                {(yyloc).STnode->SDT_handler = SDTCompSt_LCDefListStmtListRC;}
+#line 1609 "./syntax.tab.c"
     break;
 
   case 32: /* CompSt: LC DefList error RC  */
-#line 190 "./syntax.y"
+#line 197 "./syntax.y"
                           {yyerrok;}
-#line 1473 "./syntax.tab.c"
+#line 1615 "./syntax.tab.c"
     break;
 
   case 33: /* CompSt: error LC DefList StmtList RC  */
-#line 191 "./syntax.y"
+#line 198 "./syntax.y"
                                    {yyerrok;}
-#line 1479 "./syntax.tab.c"
+#line 1621 "./syntax.tab.c"
+    break;
+
+  case 34: /* StmtList: Stmt StmtList  */
+#line 200 "./syntax.y"
+                         {(yyloc).STnode->SDT_handler = SDTStmtList_StmtStmtList;}
+#line 1627 "./syntax.tab.c"
+    break;
+
+  case 35: /* StmtList: %empty  */
+#line 201 "./syntax.y"
+      {(yyloc).STnode->SDT_handler = SDTStmtList_;}
+#line 1633 "./syntax.tab.c"
+    break;
+
+  case 36: /* Stmt: Exp SEMI  */
+#line 203 "./syntax.y"
+                {(yyloc).STnode->SDT_handler = SDTStmt_ExpSEMI;}
+#line 1639 "./syntax.tab.c"
     break;
 
   case 37: /* Stmt: error SEMI  */
-#line 197 "./syntax.y"
+#line 204 "./syntax.y"
                  {yyerrok;}
-#line 1485 "./syntax.tab.c"
+#line 1645 "./syntax.tab.c"
+    break;
+
+  case 38: /* Stmt: CompSt  */
+#line 205 "./syntax.y"
+              {(yyloc).STnode->SDT_handler = SDTStmt_CompSt;}
+#line 1651 "./syntax.tab.c"
+    break;
+
+  case 39: /* Stmt: RETURN Exp SEMI  */
+#line 206 "./syntax.y"
+                       {(yyloc).STnode->SDT_handler = SDTStmt_RETURNExpSEMI;}
+#line 1657 "./syntax.tab.c"
     break;
 
   case 40: /* Stmt: RETURN error SEMI  */
-#line 200 "./syntax.y"
+#line 207 "./syntax.y"
                         {yyerrok;}
-#line 1491 "./syntax.tab.c"
+#line 1663 "./syntax.tab.c"
+    break;
+
+  case 41: /* Stmt: IF LP Exp RP Stmt  */
+#line 208 "./syntax.y"
+                                              {(yyloc).STnode->SDT_handler = SDTStmt_IFLPExpRPStmt;}
+#line 1669 "./syntax.tab.c"
+    break;
+
+  case 43: /* Stmt: IF LP Exp RP Stmt ELSE Stmt  */
+#line 210 "./syntax.y"
+                                   {(yyloc).STnode->SDT_handler = SDTStmt_IFLPExpRPStmtELSEStmt;}
+#line 1675 "./syntax.tab.c"
+    break;
+
+  case 46: /* Stmt: WHILE LP Exp RP Stmt  */
+#line 213 "./syntax.y"
+                            {(yyloc).STnode->SDT_handler = SDTStmt_WHILELPExpRPStmt;}
+#line 1681 "./syntax.tab.c"
     break;
 
   case 47: /* Stmt: WHILE LP error RP Stmt  */
-#line 207 "./syntax.y"
+#line 214 "./syntax.y"
                              {yyerrok;}
-#line 1497 "./syntax.tab.c"
+#line 1687 "./syntax.tab.c"
+    break;
+
+  case 48: /* DefList: Def DefList  */
+#line 218 "./syntax.y"
+                      {(yyloc).STnode->SDT_handler = SDTDefList_DefDefList;}
+#line 1693 "./syntax.tab.c"
+    break;
+
+  case 49: /* DefList: %empty  */
+#line 219 "./syntax.y"
+      {(yyloc).STnode->SDT_handler = SDTDefList_;}
+#line 1699 "./syntax.tab.c"
+    break;
+
+  case 50: /* Def: Specifier DecList SEMI  */
+#line 221 "./syntax.y"
+                             {(yyloc).STnode->SDT_handler = SDTDef_SpecifierDecListSEMI;}
+#line 1705 "./syntax.tab.c"
     break;
 
   case 51: /* Def: Specifier error SEMI  */
-#line 215 "./syntax.y"
+#line 222 "./syntax.y"
                            {yyerrok;}
-#line 1503 "./syntax.tab.c"
+#line 1711 "./syntax.tab.c"
+    break;
+
+  case 52: /* DecList: Dec  */
+#line 224 "./syntax.y"
+               {(yyloc).STnode->SDT_handler = SDTDecList_Dec;}
+#line 1717 "./syntax.tab.c"
+    break;
+
+  case 53: /* DecList: Dec COMMA DecList  */
+#line 225 "./syntax.y"
+                         {(yyloc).STnode->SDT_handler = SDTDecList_DecCOMMADecList;}
+#line 1723 "./syntax.tab.c"
+    break;
+
+  case 54: /* Dec: VarDec  */
+#line 227 "./syntax.y"
+             {(yyloc).STnode->SDT_handler = SDTDec_VarDec;}
+#line 1729 "./syntax.tab.c"
+    break;
+
+  case 55: /* Dec: VarDec ASSIGNOP Exp  */
+#line 228 "./syntax.y"
+                           {(yyloc).STnode->SDT_handler = SDTDec_VarDecASSIGNOPExp;}
+#line 1735 "./syntax.tab.c"
     break;
 
   case 56: /* Exp: Exp ASSIGNOP Exp  */
-#line 228 "./syntax.y"
-                       {SDTExpASSIGNOPExp((yyloc).STnode);}
-#line 1509 "./syntax.tab.c"
+#line 235 "./syntax.y"
+                       {(yyloc).STnode->SDT_handler = SDTExp_ExpASSIGNOPExp;}
+#line 1741 "./syntax.tab.c"
+    break;
+
+  case 57: /* Exp: Exp AND Exp  */
+#line 236 "./syntax.y"
+                   {(yyloc).STnode->SDT_handler = SDTExp_ExpLOGICExp;}
+#line 1747 "./syntax.tab.c"
+    break;
+
+  case 58: /* Exp: Exp OR Exp  */
+#line 237 "./syntax.y"
+                 {(yyloc).STnode->SDT_handler = SDTExp_ExpLOGICExp;}
+#line 1753 "./syntax.tab.c"
+    break;
+
+  case 59: /* Exp: Exp RELOP Exp  */
+#line 238 "./syntax.y"
+                     {(yyloc).STnode->SDT_handler = SDTExp_ExpARITHMETICExp;}
+#line 1759 "./syntax.tab.c"
+    break;
+
+  case 60: /* Exp: Exp PLUS Exp  */
+#line 239 "./syntax.y"
+                    {(yyloc).STnode->SDT_handler = SDTExp_ExpARITHMETICExp;}
+#line 1765 "./syntax.tab.c"
+    break;
+
+  case 61: /* Exp: Exp MINUS Exp  */
+#line 240 "./syntax.y"
+                    {(yyloc).STnode->SDT_handler = SDTExp_ExpARITHMETICExp;}
+#line 1771 "./syntax.tab.c"
+    break;
+
+  case 62: /* Exp: Exp STAR Exp  */
+#line 241 "./syntax.y"
+                   {(yyloc).STnode->SDT_handler = SDTExp_ExpARITHMETICExp;}
+#line 1777 "./syntax.tab.c"
+    break;
+
+  case 63: /* Exp: Exp DIV Exp  */
+#line 242 "./syntax.y"
+                  {(yyloc).STnode->SDT_handler = SDTExp_ExpARITHMETICExp;}
+#line 1783 "./syntax.tab.c"
+    break;
+
+  case 64: /* Exp: LP Exp RP  */
+#line 243 "./syntax.y"
+                 {(yyloc).STnode->SDT_handler = SDTExp_LPExpRP;}
+#line 1789 "./syntax.tab.c"
     break;
 
   case 66: /* Exp: LP error SEMI  */
-#line 238 "./syntax.y"
+#line 245 "./syntax.y"
                     {yyerrok;}
-#line 1515 "./syntax.tab.c"
+#line 1795 "./syntax.tab.c"
     break;
 
   case 67: /* Exp: LP error RC  */
-#line 239 "./syntax.y"
+#line 246 "./syntax.y"
                   {yyerrok;}
-#line 1521 "./syntax.tab.c"
+#line 1801 "./syntax.tab.c"
+    break;
+
+  case 68: /* Exp: MINUS Exp  */
+#line 247 "./syntax.y"
+                 {(yyloc).STnode->SDT_handler = SDTExp_MINUSExp;}
+#line 1807 "./syntax.tab.c"
+    break;
+
+  case 69: /* Exp: NOT Exp  */
+#line 248 "./syntax.y"
+               {(yyloc).STnode->SDT_handler = SDTExp_NOTExp;}
+#line 1813 "./syntax.tab.c"
+    break;
+
+  case 70: /* Exp: ID LP Args RP  */
+#line 249 "./syntax.y"
+                     {(yyloc).STnode->SDT_handler = SDTExp_IDLPArgsRP;}
+#line 1819 "./syntax.tab.c"
+    break;
+
+  case 72: /* Exp: ID LP RP  */
+#line 251 "./syntax.y"
+                {(yyloc).STnode->SDT_handler = SDTExp_IDLPRP;}
+#line 1825 "./syntax.tab.c"
+    break;
+
+  case 73: /* Exp: Exp LB Exp RB  */
+#line 252 "./syntax.y"
+                     {(yyloc).STnode->SDT_handler = SDTExp_ExpLBExpRB;}
+#line 1831 "./syntax.tab.c"
     break;
 
   case 75: /* Exp: Exp LB error SEMI  */
-#line 247 "./syntax.y"
+#line 254 "./syntax.y"
                         {yyerrok;}
-#line 1527 "./syntax.tab.c"
+#line 1837 "./syntax.tab.c"
     break;
 
   case 76: /* Exp: Exp LB error RC  */
-#line 248 "./syntax.y"
+#line 255 "./syntax.y"
                       {yyerrok;}
-#line 1533 "./syntax.tab.c"
+#line 1843 "./syntax.tab.c"
+    break;
+
+  case 77: /* Exp: Exp DOT ID  */
+#line 256 "./syntax.y"
+                  {(yyloc).STnode->SDT_handler = SDTExp_ExpDOTID;}
+#line 1849 "./syntax.tab.c"
     break;
 
   case 78: /* Exp: ID  */
-#line 250 "./syntax.y"
-         {SDTID((yyloc).STnode);}
-#line 1539 "./syntax.tab.c"
+#line 257 "./syntax.y"
+         {(yyloc).STnode->SDT_handler = SDTExp_ID;}
+#line 1855 "./syntax.tab.c"
     break;
 
   case 79: /* Exp: INT  */
-#line 251 "./syntax.y"
-          {SDTINT((yyloc).STnode);}
-#line 1545 "./syntax.tab.c"
+#line 258 "./syntax.y"
+          {(yyloc).STnode->SDT_handler = SDTExp_INT;}
+#line 1861 "./syntax.tab.c"
     break;
 
   case 80: /* Exp: FLOAT  */
-#line 252 "./syntax.y"
-            {SDTFLOAT((yyloc).STnode);}
-#line 1551 "./syntax.tab.c"
+#line 259 "./syntax.y"
+            {(yyloc).STnode->SDT_handler = SDTExp_FLOAT;}
+#line 1867 "./syntax.tab.c"
+    break;
+
+  case 81: /* Args: Exp COMMA Args  */
+#line 261 "./syntax.y"
+                      {(yyloc).STnode->SDT_handler = SDTArgs_ExpCOMMAArgs;}
+#line 1873 "./syntax.tab.c"
+    break;
+
+  case 82: /* Args: Exp  */
+#line 262 "./syntax.y"
+           {(yyloc).STnode->SDT_handler = SDTArgs_Exp;}
+#line 1879 "./syntax.tab.c"
     break;
 
 
-#line 1555 "./syntax.tab.c"
+#line 1883 "./syntax.tab.c"
 
       default: break;
     }
@@ -1750,7 +2078,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 260 "./syntax.y"
+#line 267 "./syntax.y"
 
 int yyerror(char * msg) {
     // fprintf(stderr, RED"error"RESET": %s\n", msg);
@@ -1826,4 +2154,13 @@ void STtraversal(STnode_t *u) {
 
 void STprint() {
     STtraversal(root);
+}
+
+void SDTparse() {
+    root->SDT_handler(root, NULL);
+    SDT_report();
+}
+
+void prtname(STnode_t *STnode) {
+    printf("%s (%d)\n", yytname[(STnode->symbol)], STnode->first_line);
 }

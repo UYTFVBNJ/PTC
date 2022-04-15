@@ -16,7 +16,7 @@ enum SemanticErrors {
   SE_STRUCT_FIELD_UNDEFINED        = 14,
   SE_STRUCT_FIELD_DUPLICATE        = 15,
   SE_STRUCT_FIELD_INITIALIZED      = 15, // same ID
-  SE_STRUCT_DUPLICATE              = 16,
+  SE_STRUCT_DUPLICATE              = 16, // OK
   SE_STRUCT_UNDEFINED              = 17,
   SE_FUNCTION_DECLARED_NOT_DEFINED = 18,
   SE_FUNCTION_CONFLICTING          = 19,

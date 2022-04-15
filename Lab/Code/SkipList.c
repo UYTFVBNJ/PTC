@@ -16,8 +16,8 @@ void SLInit(SkipList_t* sl) {
 
 void SLDeleteNode(SkipListNode_t* sl_node) {
     if (sl_node->next != NULL) {
-        SLDeleteNode(sl_node->down);
-        free(sl_node->down);
+        SLDeleteNode(sl_node->next);
+        free(sl_node->next);
     }
 }
 

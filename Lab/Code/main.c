@@ -6,6 +6,7 @@ extern int yydebug;
 int yyparse(void);
 int yylex(void);
 void STprint();
+void SDTparse();
 void initSymbolTables();
 
 int num_lexical_error = 0, num_syntax_error = 0;
@@ -21,9 +22,11 @@ int main(int argc, char** argv) {
     // yylex();
     // while (yylex() != 0) {}
     yyparse();
-    if (num_lexical_error + num_syntax_error == 0)
-    	STprint();
-
+    if (num_lexical_error + num_syntax_error == 0) {
+    	// STprint();
+        printf("Start SDT parse\n");
+        SDTparse();
+    }
     /*
     // yydebug = 1;
     if (yyparse() == 0) {
@@ -32,5 +35,7 @@ int main(int argc, char** argv) {
 
     printf("parsed over with %d lexical errors and %d syntax errors\n", num_lexical_error, num_syntax_error);
     */
+
+
     return 0;
 }

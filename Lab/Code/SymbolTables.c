@@ -5,7 +5,7 @@ SkipListStack_t *SkipListStackNew(SkipListStack_t *prev);
 
 // Symbol tables
 SkipList_t StructTable_, FuncTable_;
-const SkipList_t *StructTable = &StructTable_, *FuncTable = &FuncTable_;
+SkipList_t *StructTable = &StructTable_, *FuncTable = &FuncTable_;
 SkipListStack_t *VarTableStack;
 
 

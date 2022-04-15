@@ -5,7 +5,7 @@
 CC = gcc
 FLEX = flex
 BISON = bison
-CFLAGS = -std=c99
+CFLAGS = -std=c99 -ggdb3
 
 # 编译目标：src目录下的所有.c文件
 CFILES = $(shell find ./ -name "*.c")
@@ -18,7 +18,7 @@ LFO = $(LFC:.c=.o)
 YFO = $(YFC:.c=.o)
 
 parser: syntax $(filter-out $(LFO),$(OBJS))
-	$(CC) -o parser $(filter-out $(LFO),$(OBJS)) -lfl -ly #-O -g -fsanitize=address
+	$(CC) -o parser $(filter-out $(LFO),$(OBJS)) -lfl -O -ggdb3  #-ly -fsanitize=address
 syntax: lexical syntax-c
 	$(CC) -c $(YFC) -o $(YFO)
 

@@ -1,21 +1,23 @@
 #include "Type.h"
 #include "Token.h"
 #include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
-const struct Type_ type_int_ = {
+struct Type_ type_int_ = {
     .kind = BASIC, 
     .u.basic = TYPE_INT,
 };
 const Type type_int = &type_int_;
 
-const struct Type_ type_float_ = {
+struct Type_ type_float_ = {
     .kind = BASIC, 
     .u.basic = TYPE_FLOAT,
 };
 const Type type_float = &type_float_;
 
-const struct Type_ type_noneargs_ = {
-    .kind = STRUCTURE_DEF, 
+struct Type_ type_noneargs_ = {
+    .kind = ARGS, 
     .u.structure = NULL,
 };
 const Type type_noneargs = &type_noneargs_;
@@ -38,13 +40,17 @@ Type TypeNew(int kind, int declineno, int deflineno) {
         case STRUCTURE:
             type->u.structure = NULL;
             break;
+        case ARGS:
+            type->u.structure = NULL;
+            break;   
         case FUNCTION:
             type->u.function.name = NULL;
             type->u.function.args = NULL;
             type->u.function.ret = NULL;
+            type->u.function.addedVar = 0;
             break;
         default:
-            break;
+            assert(0);
     }
 }
 
@@ -77,9 +83,11 @@ int isSameType(Type a, Type b) {
             return a->u.array.size == b->u.array.size && isSameType(a->u.array.elem, b->u.array.elem);
         case STRUCTURE:
             return isSameField(a->u.structure, b->u.structure);
-            // TODO add structdef function
+        case ARGS:
+            return isSameField(a->u.structure, b->u.structure);
+        case FUNCTION:
         default:
-            return 0;
+            assert(0);
     }
 }
 

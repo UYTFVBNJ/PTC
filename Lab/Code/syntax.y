@@ -85,7 +85,7 @@ while (0)
 %}
 
 %{
-#include "TYPE.h"
+#include "Type.h"
 extern Type type_int, type_float;
 %}
 
@@ -146,118 +146,120 @@ extern Type type_int, type_float;
 %%
 
  /* High-level Definitions */
-Program : ExtDefList {/*SDTProgram(@$.STnode);*/}
+Program : ExtDefList {@$.STnode->SDT_handler = SDTProgram_ExtDefList;}
     ;
-ExtDefList : ExtDef ExtDefList
-    |
+ExtDefList : ExtDef ExtDefList {@$.STnode->SDT_handler = SDTExtDefList_ExtDefExtDefList;}
+    | {@$.STnode->SDT_handler = SDTExtDefList_;}
     ;
-ExtDef : Specifier ExtDecList SEMI
-    | Specifier SEMI
-    | Specifier FunDec CompSt
-    | Specifier FunDec SEMI
+ExtDef : Specifier ExtDecList SEMI  {@$.STnode->SDT_handler = SDTExtDef_SpecifierExtDecListSEMI;}
+    | Specifier SEMI  {@$.STnode->SDT_handler = SDTExtDef_SpecifierSEMI;}
+    | Specifier FunDec CompSt {@$.STnode->SDT_handler = SDTExtDef_SpecifierFunDecCompSt;}
+    | Specifier FunDec SEMI {@$.STnode->SDT_handler = SDTExtDef_SpecifierFunDecSEMI;}
     | Specifier error CompSt {yyerrok;}
     | error Specifier FunDec CompSt {yyerrok;}
     | error SEMI {yyerrok;}
     ;
-ExtDecList : VarDec
-    | VarDec COMMA ExtDecList
+ExtDecList : VarDec {@$.STnode->SDT_handler = SDTExtDecList_VarDec;}
+    | VarDec COMMA ExtDecList {@$.STnode->SDT_handler = SDTExtDecList_VarDecCOMMAExtDecList;}
     ;
 
  /* Specifiers */
-Specifier : TYPE
-    | StructSpecifier
+Specifier : TYPE {@$.STnode->SDT_handler = SDTSpecifier_TYPE;}
+    | StructSpecifier {@$.STnode->SDT_handler = SDTSpecifier_StructSpecifier;}
     ;
-StructSpecifier : STRUCT OptTag LC DefList RC
+StructSpecifier : STRUCT OptTag LC DefList RC {@$.STnode->SDT_handler = SDTStructSpecifier_STRUCTOptTagLCDefListRC;}
     | STRUCT OptTag LC error RC {yyerrok;}
-    | STRUCT Tag;    
-OptTag : ID
-    | 
+    | STRUCT Tag {@$.STnode->SDT_handler = SDTStructSpecifier_STRUCTTag;}
+    ;    
+OptTag : ID {@$.STnode->SDT_handler = SDTOptTag_ID;}
+    |  {@$.STnode->SDT_handler = SDTOptTag_;}
     ;
-Tag : ID;    
+Tag : ID {@$.STnode->SDT_handler = SDTTag_ID;}
+    ;    
 
  /* Declarators */
-VarDec : ID
-    | VarDec LB INT RB
+VarDec : ID {@$.STnode->SDT_handler = SDTVarDec_ID;}
+    | VarDec LB INT RB {@$.STnode->SDT_handler = SDTVarDec_VarDecLBINTRB;}
     | VarDec LB error RB 
     ;
-FunDec : ID LP VarList RP 
-    | ID LP RP
+FunDec : ID LP VarList RP  {@$.STnode->SDT_handler = SDTFunDec_IDLPVarListRP;}
+    | ID LP RP {@$.STnode->SDT_handler = SDTFunDec_IDLPRP;}
     | error RP {yyerrok;}
     ;
-VarList : ParamDec COMMA VarList
-    | ParamDec
+VarList : ParamDec COMMA VarList {@$.STnode->SDT_handler = SDTVarList_ParamDecCOMMAVarList;}
+    | ParamDec {@$.STnode->SDT_handler = SDTVarList_ParamDec;}
     ;
-ParamDec : Specifier VarDec
+ParamDec : Specifier VarDec {@$.STnode->SDT_handler = SDTParamDec_SpecifierVarDec;}
     ;
 
  /* Statements */
-CompSt : LC DefList StmtList RC { SDTSetHelper(CompSt_LCDefListStmtListRC); }
+CompSt : LC DefList StmtList RC {@$.STnode->SDT_handler = SDTCompSt_LCDefListStmtListRC;}
     | LC DefList error RC {yyerrok;}
     | error LC DefList StmtList RC {yyerrok;}
     ;
-StmtList : Stmt StmtList
-    |
+StmtList : Stmt StmtList {@$.STnode->SDT_handler = SDTStmtList_StmtStmtList;}
+    | {@$.STnode->SDT_handler = SDTStmtList_;}
     ;    
-Stmt : Exp SEMI
+Stmt : Exp SEMI {@$.STnode->SDT_handler = SDTStmt_ExpSEMI;}
     | error SEMI {yyerrok;}
-    | CompSt 
-    | RETURN Exp SEMI 
+    | CompSt  {@$.STnode->SDT_handler = SDTStmt_CompSt;}
+    | RETURN Exp SEMI  {@$.STnode->SDT_handler = SDTStmt_RETURNExpSEMI;}
     | RETURN error SEMI {yyerrok;}
-    | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE
+    | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE {@$.STnode->SDT_handler = SDTStmt_IFLPExpRPStmt;}
     | IF LP error RP Stmt %prec LOWER_THAN_ELSE 
-    | IF LP Exp RP Stmt ELSE Stmt 
+    | IF LP Exp RP Stmt ELSE Stmt  {@$.STnode->SDT_handler = SDTStmt_IFLPExpRPStmtELSEStmt;}
     | IF LP error RP Stmt ELSE Stmt 
     | IF LP Exp RP error ELSE Stmt 
-    | WHILE LP Exp RP Stmt 
+    | WHILE LP Exp RP Stmt  {@$.STnode->SDT_handler = SDTStmt_WHILELPExpRPStmt;}
     | WHILE LP error RP Stmt {yyerrok;}
     ;
 
  /* Local Definitions */
-DefList : Def DefList
-    |
+DefList : Def DefList {@$.STnode->SDT_handler = SDTDefList_DefDefList;}
+    | {@$.STnode->SDT_handler = SDTDefList_;}
     ;
-Def : Specifier DecList SEMI
+Def : Specifier DecList SEMI {@$.STnode->SDT_handler = SDTDef_SpecifierDecListSEMI;}
     | Specifier error SEMI {yyerrok;}
     ;
-DecList : Dec 
-    | Dec COMMA DecList 
+DecList : Dec  {@$.STnode->SDT_handler = SDTDecList_Dec;}
+    | Dec COMMA DecList  {@$.STnode->SDT_handler = SDTDecList_DecCOMMADecList;}
     ;
-Dec : VarDec
-    | VarDec ASSIGNOP Exp 
+Dec : VarDec {@$.STnode->SDT_handler = SDTDec_VarDec;}
+    | VarDec ASSIGNOP Exp  {@$.STnode->SDT_handler = SDTDec_VarDecASSIGNOPExp;}
     ;
         
  /* Expressions */
 // Calc : 
     // | Exp { printf("\n ANS = %lf\n", $1); }
     // ;
-Exp : Exp ASSIGNOP Exp {SDTExpASSIGNOPExp(@$.STnode);}
-    | Exp AND Exp 
-    | Exp OR Exp
-    | Exp RELOP Exp 
-    | Exp PLUS Exp 
-    | Exp MINUS Exp
-    | Exp STAR Exp
-    | Exp DIV Exp
-    | LP Exp RP 
+Exp : Exp ASSIGNOP Exp {@$.STnode->SDT_handler = SDTExp_ExpASSIGNOPExp;}
+    | Exp AND Exp  {@$.STnode->SDT_handler = SDTExp_ExpLOGICExp;}
+    | Exp OR Exp {@$.STnode->SDT_handler = SDTExp_ExpLOGICExp;}
+    | Exp RELOP Exp  {@$.STnode->SDT_handler = SDTExp_ExpARITHMETICExp;}
+    | Exp PLUS Exp  {@$.STnode->SDT_handler = SDTExp_ExpARITHMETICExp;}
+    | Exp MINUS Exp {@$.STnode->SDT_handler = SDTExp_ExpARITHMETICExp;}
+    | Exp STAR Exp {@$.STnode->SDT_handler = SDTExp_ExpARITHMETICExp;}
+    | Exp DIV Exp {@$.STnode->SDT_handler = SDTExp_ExpARITHMETICExp;}
+    | LP Exp RP  {@$.STnode->SDT_handler = SDTExp_LPExpRP;}
     | LP error RP 
     | LP error SEMI {yyerrok;}
     | LP error RC {yyerrok;}
-    | MINUS Exp 
-    | NOT Exp 
-    | ID LP Args RP 
+    | MINUS Exp  {@$.STnode->SDT_handler = SDTExp_MINUSExp;}
+    | NOT Exp  {@$.STnode->SDT_handler = SDTExp_NOTExp;}
+    | ID LP Args RP  {@$.STnode->SDT_handler = SDTExp_IDLPArgsRP;}
     | ID LP error RP 
-    | ID LP RP 
-    | Exp LB Exp RB 
+    | ID LP RP  {@$.STnode->SDT_handler = SDTExp_IDLPRP;}
+    | Exp LB Exp RB  {@$.STnode->SDT_handler = SDTExp_ExpLBExpRB;}
     | Exp LB error RB 
     | Exp LB error SEMI {yyerrok;}
     | Exp LB error RC {yyerrok;}
-    | Exp DOT ID 
-    | ID {SDTExp_ID(@$.STnode);}
-    | INT {SDTExp_INT_FLOAT(@$.STnode, type_int);}
-    | FLOAT {SDTFExp_INT_LOAT(@$.STnode, type_float);}
+    | Exp DOT ID  {@$.STnode->SDT_handler = SDTExp_ExpDOTID;}
+    | ID {@$.STnode->SDT_handler = SDTExp_ID;}
+    | INT {@$.STnode->SDT_handler = SDTExp_INT;}
+    | FLOAT {@$.STnode->SDT_handler = SDTExp_FLOAT;}
     ;
-Args : Exp COMMA Args
-    | Exp 
+Args : Exp COMMA Args {@$.STnode->SDT_handler = SDTArgs_ExpCOMMAArgs;}
+    | Exp  {@$.STnode->SDT_handler = SDTArgs_Exp;}
     ;
 
 
@@ -337,4 +339,13 @@ void STtraversal(STnode_t *u) {
 
 void STprint() {
     STtraversal(root);
+}
+
+void SDTparse() {
+    root->SDT_handler(root, NULL);
+    SDT_report();
+}
+
+void prtname(STnode_t *STnode) {
+    printf("%s (%d)\n", yytname[(STnode->symbol)], STnode->first_line);
 }

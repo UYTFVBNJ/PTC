@@ -17,11 +17,11 @@ typedef struct SkipList_t {
 
 
 
-
 void SLInit(SkipList_t* sl);
 void SLTearDown(SkipList_t* sl);
 int SLInsert(SkipList_t* sl, char *name, Type type);
 Type SLLookup(SkipList_t* sl, char *name);
 
+Type SLLookup(SkipList_t* sl, char *name);
 
 #endif
