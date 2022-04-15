@@ -26,7 +26,6 @@ extern Type type_int, type_float, type_noneargs;
 void STtraversal(STnode_t *u);
 void prtname(STnode_t *STnode);
 
-Type defining_struct = NULL;
 
 int semantic_errors_size = 0;
 SemanticError_t semantic_errors[MAX_SEMANTIC_ERRORS];
@@ -42,8 +41,12 @@ SemanticError_t semantic_errors[MAX_SEMANTIC_ERRORS];
 
 
 void SDT_report() {
+    int hasErr = 0;
+    for (SkipListNode_t *func = tableGetFuncList()->next; func; func = func->next) {
+        SemanticAssert(func->type->deflineno != -1, SE_FUNCTION_DECLARED_NOT_DEFINED, func->type->declineno);
+    }
     for (int i = 0; i < semantic_errors_size; i ++) {
-        printf("Error type %d at Line %d: %s\n", semantic_errors[i].seno, semantic_errors[i].lineno, semantic_errors[i].message);
+        printf("Error type %d at Line %d: %s.\n", semantic_errors[i].seno, semantic_errors[i].lineno, semantic_errors[i].message);
     }
 }
 
@@ -53,13 +56,11 @@ void SDT_report() {
 SDTDefHelper(Program_ExtDefList) {
     SON0
 
-    printf("Program_ExtDefList\n");
     PARSE(son0);
 }
 
  /* ExtDefList */
 SDTDefHelper(ExtDefList_ExtDefExtDefList) {
-    printf("Program_ExtDefList\n");
     SON1
 
     PARSE(son0);
@@ -136,9 +137,16 @@ SDTDefHelper(ExtDef_SpecifierFunDecSEMI) {
 SDTDefHelper(ExtDecList_VarDec) {
     STnode->sdti.type = Fa->sdti.type;
 
-    SON2
+    SON0
 
     PARSE(son0);
+
+    SemanticAssert(tableFindCurrVar(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
+    SemanticAssert(tableFindStruct(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
+
+    if (!hasErr) {
+        tableAddVar(son0->sdti.name, son0->sdti.type);
+    }
 }
 
 SDTDefHelper(ExtDecList_VarDecCOMMAExtDecList) {
@@ -148,6 +156,14 @@ SDTDefHelper(ExtDecList_VarDecCOMMAExtDecList) {
 
     PARSE(son0);
     PARSE(son2);
+    
+    SemanticAssert(tableFindCurrVar(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
+    SemanticAssert(tableFindStruct(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
+
+
+    if (!hasErr) {
+        tableAddVar(son0->sdti.name, son0->sdti.type);
+    }
 }
 
  /* Specifiers */
@@ -181,13 +197,13 @@ SDTDefHelper(StructSpecifier_STRUCTOptTagLCDefListRC) {
     SemanticAssert(son1->sdti.name == NULL || (tableFindStruct(son1->sdti.name) == NULL && tableFindVar(son1->sdti.name) == NULL), SE_STRUCT_DUPLICATE, STnode->first_line);
     STnode->sdti.type = TypeNew(STRUCTURE, STnode->first_line, STnode->first_line);
 
-    defining_struct = STnode->sdti.type;
-    PARSE(son3);
-    defining_struct = NULL;
-
     if (!hasErr) {
-        tableAddStruct(STnode->sdti.name, STnode->sdti.type);
+        if (STnode->sdti.name)
+            tableAddStruct(STnode->sdti.name, STnode->sdti.type);
     }
+
+    STnode->sdti.defining_struct = STnode->sdti.type;
+    PARSE(son3);    
 }
 
 SDTDefHelper(StructSpecifier_STRUCTTag) {
@@ -196,6 +212,7 @@ SDTDefHelper(StructSpecifier_STRUCTTag) {
     PARSE(son1);
 
     STnode->sdti.type = tableFindStruct(son1->sdti.name);
+    SemanticAssert(STnode->sdti.type != NULL, SE_STRUCT_UNDEFINED, STnode->first_line);
 }
  /* OptTag */
 SDTDefHelper(OptTag_ID) {
@@ -300,9 +317,10 @@ SDTDefHelper(ParamDec_SpecifierVarDec) {
     SON1
 
     PARSE(son0);
+    STnode->sdti.type = son0->sdti.type; // should be son1 because a[10]
     PARSE(son1);
 
-    STnode->sdti.type = son0->sdti.type;
+    STnode->sdti.type = son1->sdti.type; // should be son1 because a[10]
     STnode->sdti.name = son1->sdti.name;
 }
 
@@ -378,7 +396,7 @@ SDTDefHelper(Stmt_IFLPExpRPStmt) {
     PARSE(son2);
     PARSE(son4);
 
-    assert(isSameType(son2->sdti.type, type_int)); // 假设2
+    // assert(isSameType(son2->sdti.type, type_int)); // 假设2
 }
 
 SDTDefHelper(Stmt_IFLPExpRPStmtELSEStmt) {
@@ -390,7 +408,7 @@ SDTDefHelper(Stmt_IFLPExpRPStmtELSEStmt) {
     PARSE(son4);
     PARSE(son6);
 
-    assert(isSameType(son2->sdti.type, type_int)); // 假设2
+    // assert(isSameType(son2->sdti.type, type_int)); // 假设2
 }
 
 SDTDefHelper(Stmt_WHILELPExpRPStmt) {
@@ -401,13 +419,14 @@ SDTDefHelper(Stmt_WHILELPExpRPStmt) {
     PARSE(son2);
     PARSE(son4);
    
-    assert(isSameType(son2->sdti.type, type_int)); // 假设2
+    // assert(isSameType(son2->sdti.type, type_int)); // 假设2
 }
 
  /* Local Definitions */
  /* DefList */
 SDTDefHelper(DefList_DefDefList) {
     STnode->sdti.type = Fa->sdti.type;
+    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
     SON1
 
@@ -417,10 +436,12 @@ SDTDefHelper(DefList_DefDefList) {
 
 SDTDefHelper(DefList_) {
     STnode->sdti.type = Fa->sdti.type;
+    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 }
 
  /* Def */
 SDTDefHelper(Def_SpecifierDecListSEMI) {
+    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
     SON2
 
     PARSE(son0);
@@ -431,6 +452,7 @@ SDTDefHelper(Def_SpecifierDecListSEMI) {
  /* DecList */
 SDTDefHelper(DecList_Dec) {
     STnode->sdti.type = Fa->sdti.type;
+    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
     SON0
 
@@ -438,6 +460,7 @@ SDTDefHelper(DecList_Dec) {
 } 
 SDTDefHelper(DecList_DecCOMMADecList) {
     STnode->sdti.type = Fa->sdti.type;
+    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
     SON2
 
@@ -448,19 +471,20 @@ SDTDefHelper(DecList_DecCOMMADecList) {
  /* Dec */
 SDTDefHelper(Dec_VarDec) {
     STnode->sdti.type = Fa->sdti.type;
+    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
     SON0
 
     PARSE(son0);
 
-    if (defining_struct != NULL) {
-        SemanticAssert(FieldListFind(son0->sdti.name, defining_struct->u.structure) == NULL, SE_STRUCT_FIELD_DUPLICATE, STnode->first_line);
+    if (STnode->sdti.defining_struct != NULL) {
+        SemanticAssert(FieldListFind(son0->sdti.name, STnode->sdti.defining_struct->u.structure) == NULL, SE_STRUCT_FIELD_DUPLICATE, STnode->first_line);
         if (!hasErr) {
-            defining_struct->u.structure = FieldListNew(son0->sdti.name, son0->sdti.type, defining_struct->u.structure);
+            STnode->sdti.defining_struct->u.structure = FieldListNew(son0->sdti.name, son0->sdti.type, STnode->sdti.defining_struct->u.structure);
         }
     } else {
-        Type type = tableFindVar(son0->sdti.name);
-        SemanticAssert(type == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
+        SemanticAssert(tableFindCurrVar(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
+        SemanticAssert(tableFindStruct(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
 
         if (!hasErr) {
             tableAddVar(son0->sdti.name, son0->sdti.type);
@@ -469,30 +493,30 @@ SDTDefHelper(Dec_VarDec) {
 }
 SDTDefHelper(Dec_VarDecASSIGNOPExp) {
     STnode->sdti.type = Fa->sdti.type;
+    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
     SON2
 
     PARSE(son0);
-    PARSE(son2);
 
-    if (defining_struct != NULL) {
-        SemanticAssert(FieldListFind(son0->sdti.name, defining_struct->u.structure) == NULL, SE_STRUCT_FIELD_DUPLICATE, STnode->first_line);
+    if (STnode->sdti.defining_struct != NULL) {
+        SemanticAssert(FieldListFind(son0->sdti.name, STnode->sdti.defining_struct->u.structure) == NULL, SE_STRUCT_FIELD_DUPLICATE, STnode->first_line);
         if (!hasErr) {
-            defining_struct->u.structure = FieldListNew(son0->sdti.name, son0->sdti.type, defining_struct->u.structure);
+            STnode->sdti.defining_struct->u.structure = FieldListNew(son0->sdti.name, son0->sdti.type, STnode->sdti.defining_struct->u.structure);
         }
-        SemanticAssert(defining_struct == NULL, SE_STRUCT_FIELD_INITIALIZED, STnode->first_line);
+        SemanticAssert(STnode->sdti.defining_struct == NULL, SE_STRUCT_FIELD_INITIALIZED, STnode->first_line);
     } else {
-        SemanticAssert(isSameType(son0->sdti.type, son2->sdti.type), 
-            SE_MISMATCHED_ASSIGNMENT, STnode->first_line);
-
-        Type type = tableFindVar(son0->sdti.name);
-        SemanticAssert(type == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
+        SemanticAssert(tableFindCurrVar(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
+        SemanticAssert(tableFindStruct(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
 
         if (!hasErr) {
             tableAddVar(son0->sdti.name, son0->sdti.type);
         }
     }
-    
+        
+    PARSE(son2);
+    SemanticAssert(isSameType(son0->sdti.type, son2->sdti.type), 
+        SE_MISMATCHED_ASSIGNMENT, STnode->first_line);
 }
  
 
@@ -529,15 +553,17 @@ SDTDefHelper(Exp_ExpARITHMETICExp) {
     PARSE(son0);
     PARSE(son2);
 
-    SemanticAssert(isSameType(son0->sdti.type, son1->sdti.type), SE_MISMATCHED_OPERANDS, STnode->first_line);
+    SemanticAssert(isSameType(son0->sdti.type, son2->sdti.type), SE_MISMATCHED_OPERANDS, STnode->first_line);
+    SemanticAssert(son0->sdti.type->kind == BASIC, SE_MISMATCHED_OPERANDS, STnode->first_line);
+    SemanticAssert(son2->sdti.type->kind == BASIC, SE_MISMATCHED_OPERANDS, STnode->first_line);
 
     if (isSameType(son0->sdti.type, type_int) && isSameType(son0->sdti.type, type_int)) 
         STnode->sdti.type = type_int;
     else 
         STnode->sdti.type = type_float;
 
-    assert(isSameType(son0->sdti.type, type_int) || isSameType(son0->sdti.type, type_float)); // 假设2
-    assert(isSameType(son0->sdti.type, type_int) || isSameType(son2->sdti.type, type_float)); // 假设2
+    // assert(isSameType(son0->sdti.type, type_int) || isSameType(son2->sdti.type, type_float)); // 假设2
+    // assert(isSameType(son0->sdti.type, type_int) || isSameType(son2->sdti.type, type_float)); // 假设2
 }
 
 SDTDefHelper(Exp_LPExpRP) {
@@ -581,26 +607,27 @@ SDTDefHelper(Exp_IDLPArgsRP) {
     Type var = tableFindVar(name);
     SemanticAssert(var == NULL, SE_ACCESS_TO_NON_FUNCTION, STnode->first_line);
     SemanticAssert(var != NULL || type != NULL, SE_FUNCTION_UNDEFINED, STnode->first_line);
-    SemanticAssert(type == NULL || isSameType(son2->sdti.type, type->u.function.args), SE_MISMATCHED_SIGNATURE, STnode->first_line);
 
     if (hasErr) {
         STnode->sdti.type = type_int;
     } else {
         STnode->sdti.type = type->u.function.ret;
     }
+
+    SemanticAssert(type == NULL || isSameType(son2->sdti.type, type->u.function.args), SE_MISMATCHED_SIGNATURE, STnode->first_line);
 }
 
 SDTDefHelper(Exp_IDLPRP) {
     SON2
     VAL_NAME(0)
 
-    PARSE(son0);
-
     Type type = tableFindFunc(name);
     Type var = tableFindVar(name);
     SemanticAssert(var == NULL, SE_ACCESS_TO_NON_FUNCTION, STnode->first_line);
     SemanticAssert(var != NULL || type != NULL, SE_FUNCTION_UNDEFINED, STnode->first_line);
-    SemanticAssert(isSameType(type_noneargs, type->u.function.args), SE_MISMATCHED_SIGNATURE, STnode->first_line);
+    if (type) {
+        SemanticAssert(isSameType(type_noneargs, type->u.function.args), SE_MISMATCHED_SIGNATURE, STnode->first_line);
+    }
 
     if (hasErr) {
         STnode->sdti.type = type_int;
@@ -637,10 +664,14 @@ SDTDefHelper(Exp_ExpDOTID) {
     if (son0->sdti.type->kind == STRUCTURE) {
         Type type = FieldListFind(name, son0->sdti.type->u.structure);
         SemanticAssert(type != NULL, SE_STRUCT_FIELD_UNDEFINED, STnode->first_line);
-        STnode->sdti.type = type;
+        if (type != NULL)
+            STnode->sdti.type = type;
+        else    
+            STnode->sdti.type = type_int; // use int
     }
     else 
         STnode->sdti.type = type_int; // use int
+    STnode->sdti.islval = 1;
 }
 
 SDTDefHelper(Exp_ID) {
@@ -652,7 +683,10 @@ SDTDefHelper(Exp_ID) {
     SemanticAssert(type != NULL, SE_VARIABLE_UNDEFINED, STnode->first_line);
 
     STnode->sdti.islval = 1;
-    STnode->sdti.type = type;
+    if (type != NULL)
+        STnode->sdti.type = type;
+    else 
+        STnode->sdti.type = type_int; // use int
 }
 
 SDTDefHelper(Exp_INT) {

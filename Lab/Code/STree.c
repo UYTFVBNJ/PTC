@@ -5,7 +5,7 @@ STnode_t *STreeNewNode() {
     STnode_t *STnode = (STnode_t *)malloc(sizeof(STnode_t));
 
     STnode->sdti.name = NULL;
-    STnode->sdti.namelist = NULL;
+    STnode->sdti.defining_struct = NULL;
     STnode->sdti.type = NULL;
     STnode->sdti.islval = 0;
     

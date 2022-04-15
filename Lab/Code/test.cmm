@@ -1,6 +1,14 @@
 struct A {
-	int a, a;
+	int a;
+	struct B {
+		float b;
+	} c;
 };
+
+
+int inc(int a) {
+
+}
 
 int main() {
 	struct A a, b;

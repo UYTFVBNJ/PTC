@@ -80,12 +80,13 @@ int isSameType(Type a, Type b) {
         case BASIC:
             return a->u.basic == b->u.basic;
         case ARRAY:
-            return a->u.array.size == b->u.array.size && isSameType(a->u.array.elem, b->u.array.elem);
+            return isSameType(a->u.array.elem, b->u.array.elem);
         case STRUCTURE:
             return isSameField(a->u.structure, b->u.structure);
         case ARGS:
             return isSameField(a->u.structure, b->u.structure);
         case FUNCTION:
+            return isSameType(a->u.function.args, b->u.function.args) && isSameType(a->u.function.ret, b->u.function.ret);
         default:
             assert(0);
     }

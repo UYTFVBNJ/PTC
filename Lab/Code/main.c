@@ -24,7 +24,6 @@ int main(int argc, char** argv) {
     yyparse();
     if (num_lexical_error + num_syntax_error == 0) {
     	// STprint();
-        printf("Start SDT parse\n");
         SDTparse();
     }
     /*

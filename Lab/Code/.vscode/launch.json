@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/parser",
-            "args": ["${workspaceFolder}/../Test/2.14.cmm" ],
+            "args": ["~/compilers-tests/tests/officialA-9.cmm" ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

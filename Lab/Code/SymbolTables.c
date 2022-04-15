@@ -31,6 +31,10 @@ Type tableFindFunc(char *name) {
     return SLLookup(FuncTable, name);
 }
 
+SkipListNode_t *tableGetFuncList() {
+    return &(FuncTable->header[0]);
+}
+
 void tableAddVar(char *name, Type type) {
     SLInsert(&(VarTableStack->table), name, type);
 }
@@ -42,6 +46,10 @@ Type tableFindVar(char *name) {
             return type;
     }
     return NULL;
+}
+
+Type tableFindCurrVar(char *name) {
+    return SLLookup(&(VarTableStack->table), name);
 }
 
 SkipListStack_t *SkipListStackNew(SkipListStack_t *prev) {

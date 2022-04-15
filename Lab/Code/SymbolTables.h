@@ -14,9 +14,11 @@ Type tableFindStruct(char *name);
 
 void tableAddFunc(char *name, Type type);
 Type tableFindFunc(char *name);
+SkipListNode_t *tableGetFuncList();
 
 void tableAddVar(char *name, Type type);
 Type tableFindVar(char *name);
+Type tableFindCurrVar(char *name);
 
 void varStackPush();
 void varStackPop();

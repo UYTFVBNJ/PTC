@@ -5,14 +5,9 @@
 
 #define MAX_STACK_DEPTH 1000
 
-typedef struct NameList_t {
-    char *name;
-    struct NameList_t *next;
-} NameList_t;
-
 typedef struct SDT_info_t {
     char *name;
-    NameList_t *namelist;
+    Type defining_struct;
     Type type;
     int islval;
 } SDT_info_t;
