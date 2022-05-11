@@ -1,5 +1,7 @@
 #include "SymbolTables.h"
-#include "stdlib.h"
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
 SkipListStack_t *SkipListStackNew(SkipListStack_t *prev);
 
@@ -8,10 +10,13 @@ SkipList_t StructTable_, FuncTable_;
 SkipList_t *StructTable = &StructTable_, *FuncTable = &FuncTable_;
 SkipListStack_t *VarTableStack;
 
+int SymbolTableCmp(void *a, void *b) {
+    return strcmp((char *)a, (char *)b);
+}
 
 void initSymbolTables() {
-    SLInit(StructTable);
-    SLInit(FuncTable);
+    SLInit(StructTable, SymbolTableCmp);
+    SLInit(FuncTable, SymbolTableCmp);
     VarTableStack = SkipListStackNew(NULL);
 }
 
@@ -35,42 +40,68 @@ SkipListNode_t *tableGetFuncList() {
     return &(FuncTable->header[0]);
 }
 
+
+Var_info_t *NewVar_info_t(Type type) {
+    Var_info_t *var_info = (Var_info_t *)malloc(sizeof(Var_info_t));
+    var_info->type = type;
+    // var_info->op = NewOperand(type);
+    var_info->op = NULL;
+}
+
 void tableAddVar(char *name, Type type) {
-    SLInsert(&(VarTableStack->table), name, type);
+    SLInsert(&(VarTableStack->table), name, NewVar_info_t(type));
 }
 
 Type tableFindVar(char *name) {
     for (SkipListStack_t *cur = VarTableStack; cur; cur = cur->prev) {
-        Type type = SLLookup(&(cur->table), name);
-        if (type)
-            return type;
+        Var_info_t *var_info = SLLookup(&(cur->table), name);
+        if (var_info)
+            return var_info->type;
     }
     return NULL;
 }
 
 Type tableFindCurrVar(char *name) {
-    return SLLookup(&(VarTableStack->table), name);
+    Var_info_t *var_info = SLLookup(&(VarTableStack->table), name);
+    if (var_info)
+        return var_info->type;
+    else 
+        return NULL;
+}
+
+Operand tableFindVarOp(char *name) {
+    for (SkipListStack_t *cur = VarTableStack; cur; cur = cur->prev) {
+        Var_info_t *var_info = SLLookup(&(cur->table), name);
+        if (var_info)
+            return var_info->op;
+    }
+    return NULL;
 }
 
 SkipListStack_t *SkipListStackNew(SkipListStack_t *prev) {
     SkipListStack_t *stack = (SkipListStack_t *)malloc(sizeof(SkipListStack_t));
     stack->prev = prev;
-    SLInit(&(stack->table));
+    SLInit(&(stack->table), SymbolTableCmp);
     return stack;
 }
 
-SkipListStack_t *SkipListStackDelete(SkipListStack_t *stack) {
-    SkipListStack_t *prev = stack->prev;
-    SLTearDown(&(stack->table));
-    free(stack);
-    return prev;
-}
+// SkipListStack_t *SkipListStackDelete(SkipListStack_t *stack) {
+    // SkipListStack_t *prev = stack->prev;
+    // SLTearDown(&(stack->table));
+    // free(stack);
+    // return prev;
+// }
 
 void varStackPush() {
     VarTableStack = SkipListStackNew(VarTableStack);
 }
 
 void varStackPop() {
-    VarTableStack = SkipListStackDelete(VarTableStack);
+    // VarTableStack = SkipListStackDelete(VarTableStack);
+    assert(VarTableStack != NULL);
+    VarTableStack = VarTableStack->prev;
 }
 
+void varStackSet(STnode_t *STnode) {
+    STnode->sdti.VarTableStack = VarTableStack;
+}

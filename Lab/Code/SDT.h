@@ -5,11 +5,14 @@
 
 #define MAX_STACK_DEPTH 1000
 
+typedef struct SkipListStack_t SkipListStack_t;
+
 typedef struct SDT_info_t {
     char *name;
     Type defining_struct;
     Type type;
     int islval;
+    SkipListStack_t *VarTableStack;
 } SDT_info_t;
 
 typedef struct STnode_t STnode_t;

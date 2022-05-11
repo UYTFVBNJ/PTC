@@ -6,18 +6,21 @@
 
 struct Type_ type_int_ = {
     .kind = BASIC, 
+    .size = 4,
     .u.basic = TYPE_INT,
 };
 const Type type_int = &type_int_;
 
 struct Type_ type_float_ = {
     .kind = BASIC, 
+    .size = -1,
     .u.basic = TYPE_FLOAT,
 };
 const Type type_float = &type_float_;
 
 struct Type_ type_noneargs_ = {
     .kind = ARGS, 
+    .size = -1,
     .u.structure = NULL,
 };
 const Type type_noneargs = &type_noneargs_;
@@ -29,6 +32,7 @@ Type TypeNew(int kind, int declineno, int deflineno) {
     type->kind = kind;
     type->declineno = declineno;
     type->deflineno = deflineno;
+    type->size = -1;
 
     switch (kind) {
         case BASIC:
@@ -59,12 +63,13 @@ FieldList FieldListNew(char *name, Type type, FieldList tail) {
     field->name = name;
     field->type = type;
     field->tail = tail;
+    field->offset = tail ? tail->offset + tail->type->size : 0;
 }
 
-Type FieldListFind(char *name, FieldList list) {
+FieldList FieldListFind(char *name, FieldList list) {
     for (; list; list = list->tail) {
         if (strcmp(name, list->name) == 0)
-            return list->type;
+            return list;
     }
     return NULL;
 }
@@ -76,6 +81,7 @@ int isSameType(Type a, Type b) {
         return 1;
     if (a->kind != b->kind)
         return 0;
+    // cannot use size to distinguish, as int a[10] and int b[50] are equal   
     switch (a->kind) {
         case BASIC:
             return a->u.basic == b->u.basic;

@@ -7,21 +7,20 @@
 #define SkipListL 15
 typedef struct SkipListNode_t {
     struct SkipListNode_t *down, *next;
-    char *key;
-    Type type;
+    void *key;
+    void *val;
 } SkipListNode_t;
 
 typedef struct SkipList_t {
     SkipListNode_t header[SkipListL];
+    int (*cmp)(void *a, void *b);
 } SkipList_t;
 
 
 
-void SLInit(SkipList_t* sl);
+void SLInit(SkipList_t* sl, int (*cmp)(void *a, void *b));
 void SLTearDown(SkipList_t* sl);
-int SLInsert(SkipList_t* sl, char *name, Type type);
-Type SLLookup(SkipList_t* sl, char *name);
-
-Type SLLookup(SkipList_t* sl, char *name);
+int SLInsert(SkipList_t* sl, char *name, void *val);
+void *SLLookup(SkipList_t* sl, char *name);
 
 #endif

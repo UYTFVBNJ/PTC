@@ -6,12 +6,13 @@
 
 SkipListNode_t *tmp_LE[SkipListL];
 
-void SLInit(SkipList_t* sl) {
+void SLInit(SkipList_t* sl, int (*cmp)(void *a, void *b)) {
     for (int i = 0; i < SkipListL; i ++) {
         sl->header[i].key = "";
         sl->header[i].down = (i > 0) ? &(sl->header[i - 1]) : NULL;
         sl->header[i].next = NULL;
     }
+    sl->cmp = cmp;
 }
 
 void SLDeleteNode(SkipListNode_t* sl_node) {
@@ -27,11 +28,11 @@ void SLTearDown(SkipList_t* sl) {
     }
 }
 
-SkipListNode_t* SLNewNode(char *name, Type type) {
+SkipListNode_t* SLNewNode(char *name, void *val) {
     SkipListNode_t* p = (SkipListNode_t*)malloc(sizeof(SkipListNode_t));
     assert(p != NULL);
     p->key = name;
-    p->type = type;
+    p->val = val;
     p->down = NULL;
     p->next = NULL;
     return p;
@@ -40,7 +41,7 @@ SkipListNode_t* SLNewNode(char *name, Type type) {
 SkipListNode_t* SLFindLE(SkipList_t* sl, char *name) {
     SkipListNode_t *p = &(sl->header[SkipListL - 1]);
     for (int i = SkipListL - 1; i >= 0; i --) {
-        while (p->next && strcmp(p->next->key, name) <= 0) 
+        while (p->next && sl->cmp(p->next->key, name) <= 0) 
             p = p->next;
         tmp_LE[i] = p;
         if (i > 0) p = p->down;
@@ -48,15 +49,15 @@ SkipListNode_t* SLFindLE(SkipList_t* sl, char *name) {
     return p;
 }
 
-int SLInsert(SkipList_t* sl, char *name, Type type) {
+int SLInsert(SkipList_t* sl, char *name, void *val) {
     SkipListNode_t *p = SLFindLE(sl, name);
-    assert(strcmp(p->key, name) <= 0);
-    if (strcmp(p->key, name) == 0) {
+    assert(sl->cmp(p->key, name) <= 0);
+    if (sl->cmp(p->key, name) == 0) {
         // already exist
         return 0;
     }
     for (int i = 0; i < SkipListL && (i == 0 || rand() % SkipListP == 0); i ++) {
-        SkipListNode_t *np = SLNewNode(name, type);   
+        SkipListNode_t *np = SLNewNode(name, val);   
         np->next = tmp_LE[i]->next;
         if (i > 0)
             np->down = tmp_LE[i - 1]->next;
@@ -65,10 +66,10 @@ int SLInsert(SkipList_t* sl, char *name, Type type) {
     return 1;
 }
 
-Type SLLookup(SkipList_t* sl, char *name) {
+void *SLLookup(SkipList_t* sl, char *name) {
     SkipListNode_t *p = SLFindLE(sl, name);
-    if (strcmp(p->key, name) == 0)
-        return p->type;
+    if (sl->cmp(p->key, name) == 0)
+        return p->val;
     else 
         return NULL;
 }

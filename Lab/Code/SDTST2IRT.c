@@ -1,5 +1,6 @@
-#include "SDT.h"
+#include "SDTST2IRT.h"
 #include "STree.h"
+#include "IRTree.h"
 #include "SkipList.h"
 #include "SemanticErrors.h"
 #include "SymbolTables.h"
@@ -8,8 +9,8 @@
 #include <assert.h>
 
 
-// SDT function helper
-#define SON0 int hasErr = 0; void varStackSet(STnode); STnode_t *son0 = (STnode->son);
+// SDTST2IRT function helper
+#define SON0 STnode_t *son0 = (STnode->son);
 #define SON1 SON0 STnode_t *son1 = (STnode->son->next);
 #define SON2 SON1 STnode_t *son2 = (STnode->son->next->next);
 #define SON3 SON2 STnode_t *son3 = (STnode->son->next->next->next);
@@ -17,7 +18,13 @@
 #define SON5 SON4 STnode_t *son5 = (STnode->son->next->next->next->next->next);
 #define SON6 SON5 STnode_t *son6 = (STnode->son->next->next->next->next->next->next);
 
-#define PARSE(son) son->SDT_handler(son, STnode)
+#define IRnode(kind) IRTnode_t *IRTnode = IRTreeNewNode(kind);
+#define SET0(IRTnode) IRTnode->son = IRTnode;
+#define SET1(IRTnode) IRTnode->son->next = IRTnode;
+#define SET2(IRTnode) IRTnode->son->next->next = IRTnode;
+#define SET3(IRTnode) IRTnode->son->next->next->next = IRTnode;
+
+#define PARSE(son) son->SDTST2IRT_handler(son, STnode)
 
 #define VAL_NAME(x) char *name = son ## x->ti.id_val;
 
@@ -27,64 +34,39 @@ void STtraversal(STnode_t *u);
 void prtname(STnode_t *STnode);
 
 
-int semantic_errors_size = 0;
-SemanticError_t semantic_errors[MAX_SEMANTIC_ERRORS];
-
-#define SemanticAssert(bool, SemanticError, errlineno)                  \
-    if (!(bool)) {                                                      \
-        hasErr = 1;                                                     \
-        semantic_errors[semantic_errors_size].seno = SemanticError;     \
-        semantic_errors[semantic_errors_size].message = #SemanticError; \
-        semantic_errors[semantic_errors_size].lineno = errlineno;       \
-        semantic_errors_size ++;                                        \
-    }
-
-
-void SDT_report() {
-    int hasErr = 0;
-    for (SkipListNode_t *func = tableGetFuncList()->next; func; func = func->next) {
-        SemanticAssert(func->type->deflineno != -1, SE_FUNCTION_DECLARED_NOT_DEFINED, func->type->declineno);
-    }
-    for (int i = 0; i < semantic_errors_size; i ++) {
-        printf("Error type %d at Line %d: %s.\n", semantic_errors[i].seno, semantic_errors[i].lineno, semantic_errors[i].message);
-    }
-}
-
-// semantic checkers
-
  /* Program */
-SDTDefHelper(Program_ExtDefList) {
+SDTST2IRTDefHelper(Program_ExtDefList) {
     SON0
 
     PARSE(son0);
 }
 
  /* ExtDefList */
-SDTDefHelper(ExtDefList_ExtDefExtDefList) {
+SDTST2IRTDefHelper(ExtDefList_ExtDefExtDefList) {
     SON1
 
     PARSE(son0);
     PARSE(son1);
 }
 
-SDTDefHelper(ExtDefList_) {
+SDTST2IRTDefHelper(ExtDefList_) {
     
 }
 
  /* ExtDef */
-SDTDefHelper(ExtDef_SpecifierExtDecListSEMI) {
+SDTST2IRTDefHelper(ExtDef_SpecifierExtDecListSEMI) {
     SON2
 
     PARSE(son0);
     STnode->sdti.type = son0->sdti.type;
     PARSE(son1);
 }
-SDTDefHelper(ExtDef_SpecifierSEMI) {
+SDTST2IRTDefHelper(ExtDef_SpecifierSEMI) {
     SON1
 
     PARSE(son0);
 }
-SDTDefHelper(ExtDef_SpecifierFunDecCompSt) {
+SDTST2IRTDefHelper(ExtDef_SpecifierFunDecCompSt) {
     SON2
 
     STnode->sdti.type = TypeNew(FUNCTION, STnode->first_line, STnode->first_line);
@@ -110,7 +92,7 @@ SDTDefHelper(ExtDef_SpecifierFunDecCompSt) {
 
     PARSE(son2);
 }
-SDTDefHelper(ExtDef_SpecifierFunDecSEMI) {
+SDTST2IRTDefHelper(ExtDef_SpecifierFunDecSEMI) {
     SON2
 
     STnode->sdti.type = TypeNew(FUNCTION, STnode->first_line, -1);
@@ -134,7 +116,7 @@ SDTDefHelper(ExtDef_SpecifierFunDecSEMI) {
 }
 
  /* ExtDecList */
-SDTDefHelper(ExtDecList_VarDec) {
+SDTST2IRTDefHelper(ExtDecList_VarDec) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON0
@@ -149,7 +131,7 @@ SDTDefHelper(ExtDecList_VarDec) {
     }
 }
 
-SDTDefHelper(ExtDecList_VarDecCOMMAExtDecList) {
+SDTST2IRTDefHelper(ExtDecList_VarDecCOMMAExtDecList) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON2
@@ -168,7 +150,7 @@ SDTDefHelper(ExtDecList_VarDecCOMMAExtDecList) {
 
  /* Specifiers */
  /* Specifier */
-SDTDefHelper(Specifier_TYPE) {
+SDTST2IRTDefHelper(Specifier_TYPE) {
     switch (STnode->son->ti.type_val) {
         case TYPE_INT:
             STnode->sdti.type = type_int;
@@ -180,7 +162,7 @@ SDTDefHelper(Specifier_TYPE) {
             assert(0);
     }
 }
-SDTDefHelper(Specifier_StructSpecifier) {
+SDTST2IRTDefHelper(Specifier_StructSpecifier) {
     SON0
 
     PARSE(son0);
@@ -188,7 +170,7 @@ SDTDefHelper(Specifier_StructSpecifier) {
     STnode->sdti.type = son0->sdti.type;
 }
  /* StructSpecifier */
-SDTDefHelper(StructSpecifier_STRUCTOptTagLCDefListRC) {
+SDTST2IRTDefHelper(StructSpecifier_STRUCTOptTagLCDefListRC) {
     SON4
 
     PARSE(son1);
@@ -204,12 +186,9 @@ SDTDefHelper(StructSpecifier_STRUCTOptTagLCDefListRC) {
 
     STnode->sdti.defining_struct = STnode->sdti.type;
     PARSE(son3);    
-    STnode->sdti.type->size = STnode->sdti.type->u.structure ? 
-                              STnode->sdti.type->u.structure->offset + STnode->sdti.type->u.structure->type->size :
-                              0;
 }
 
-SDTDefHelper(StructSpecifier_STRUCTTag) {
+SDTST2IRTDefHelper(StructSpecifier_STRUCTTag) {
     SON1
 
     PARSE(son1);
@@ -218,20 +197,20 @@ SDTDefHelper(StructSpecifier_STRUCTTag) {
     SemanticAssert(STnode->sdti.type != NULL, SE_STRUCT_UNDEFINED, STnode->first_line);
 }
  /* OptTag */
-SDTDefHelper(OptTag_ID) {
+SDTST2IRTDefHelper(OptTag_ID) {
     SON0
     VAL_NAME(0)
 
     STnode->sdti.name = name;
 }
 
-SDTDefHelper(OptTag_) {
+SDTST2IRTDefHelper(OptTag_) {
     // TODO has problem ?
     STnode->sdti.name = NULL;
 }
 
  /* Tag */
-SDTDefHelper(Tag_ID) {
+SDTST2IRTDefHelper(Tag_ID) {
     SON0
     VAL_NAME(0)
 
@@ -240,7 +219,7 @@ SDTDefHelper(Tag_ID) {
 
  /* Declarators */
  /* VarDec */
-SDTDefHelper(VarDec_ID) {
+SDTST2IRTDefHelper(VarDec_ID) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON0
@@ -249,7 +228,7 @@ SDTDefHelper(VarDec_ID) {
     STnode->sdti.name = name;
 }
 
-SDTDefHelper(VarDec_VarDecLBINTRB) {
+SDTST2IRTDefHelper(VarDec_VarDecLBINTRB) {
     STnode->sdti.type = Fa->sdti.type;
     
     SON3
@@ -263,11 +242,10 @@ SDTDefHelper(VarDec_VarDecLBINTRB) {
     STnode->sdti.type = TypeNew(ARRAY, STnode->first_line, STnode->first_line);
     STnode->sdti.type->u.array.elem = son0->sdti.type;
     STnode->sdti.type->u.array.size = son2->ti.int_val;
-    STnode->sdti.type->size = (STnode->sdti.type->u.array.elem->size) * (STnode->sdti.type->u.array.size);
 }
 
  /* FunDec */
-SDTDefHelper(FunDec_IDLPVarListRP) {
+SDTST2IRTDefHelper(FunDec_IDLPVarListRP) {
     STnode->sdti.type = Fa->sdti.type->u.function.args;
 
     SON3
@@ -277,7 +255,7 @@ SDTDefHelper(FunDec_IDLPVarListRP) {
 
     PARSE(son2);
 }
-SDTDefHelper(FunDec_IDLPRP) {
+SDTST2IRTDefHelper(FunDec_IDLPRP) {
     STnode->sdti.type = Fa->sdti.type->u.function.args;
 
     SON2
@@ -287,7 +265,7 @@ SDTDefHelper(FunDec_IDLPRP) {
 }
 
  /* VarList */
-SDTDefHelper(VarList_ParamDecCOMMAVarList) {
+SDTST2IRTDefHelper(VarList_ParamDecCOMMAVarList) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON2
@@ -303,7 +281,7 @@ SDTDefHelper(VarList_ParamDecCOMMAVarList) {
         STnode->sdti.type->u.structure = FieldListNew(son0->sdti.name, son0->sdti.type, STnode->sdti.type->u.structure); // add to head
     }
 }
-SDTDefHelper(VarList_ParamDec) {
+SDTST2IRTDefHelper(VarList_ParamDec) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON0
@@ -317,7 +295,7 @@ SDTDefHelper(VarList_ParamDec) {
 }
 
  /* ParamDec */
-SDTDefHelper(ParamDec_SpecifierVarDec) {
+SDTST2IRTDefHelper(ParamDec_SpecifierVarDec) {
     SON1
 
     PARSE(son0);
@@ -330,7 +308,7 @@ SDTDefHelper(ParamDec_SpecifierVarDec) {
 
  /* Statements */
  /* CompSt */
-SDTDefHelper(CompSt_LCDefListStmtListRC) {
+SDTST2IRTDefHelper(CompSt_LCDefListStmtListRC) {
     STnode->sdti.type = Fa->sdti.type;
     SON3
     varStackPush();
@@ -351,7 +329,7 @@ SDTDefHelper(CompSt_LCDefListStmtListRC) {
 } 
 
  /* StmtList */
-SDTDefHelper(StmtList_StmtStmtList) {
+SDTST2IRTDefHelper(StmtList_StmtStmtList) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON1
@@ -360,12 +338,12 @@ SDTDefHelper(StmtList_StmtStmtList) {
     PARSE(son1);
 }
 
-SDTDefHelper(StmtList_) {
+SDTST2IRTDefHelper(StmtList_) {
     STnode->sdti.type = Fa->sdti.type;
 }
 
  /* Stmt */
-SDTDefHelper(Stmt_ExpSEMI) {
+SDTST2IRTDefHelper(Stmt_ExpSEMI) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON1
@@ -373,7 +351,7 @@ SDTDefHelper(Stmt_ExpSEMI) {
     PARSE(son0);
 }
 
-SDTDefHelper(Stmt_CompSt) {
+SDTST2IRTDefHelper(Stmt_CompSt) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON0
@@ -381,7 +359,7 @@ SDTDefHelper(Stmt_CompSt) {
     PARSE(son0);
 }
 
-SDTDefHelper(Stmt_RETURNExpSEMI) {
+SDTST2IRTDefHelper(Stmt_RETURNExpSEMI) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON1
@@ -392,7 +370,7 @@ SDTDefHelper(Stmt_RETURNExpSEMI) {
     SemanticAssert(isSameType(STnode->sdti.type->u.function.ret, son1->sdti.type), SE_MISMATCHED_RETURN, STnode->first_line);
 }
 
-SDTDefHelper(Stmt_IFLPExpRPStmt) {
+SDTST2IRTDefHelper(Stmt_IFLPExpRPStmt) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON4
@@ -400,10 +378,10 @@ SDTDefHelper(Stmt_IFLPExpRPStmt) {
     PARSE(son2);
     PARSE(son4);
 
-    // assert(isSameType(son2->sdti.type, type_int)); // L2 假设2
+    // assert(isSameType(son2->sdti.type, type_int)); // 假设2
 }
 
-SDTDefHelper(Stmt_IFLPExpRPStmtELSEStmt) {
+SDTST2IRTDefHelper(Stmt_IFLPExpRPStmtELSEStmt) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON6
@@ -412,10 +390,10 @@ SDTDefHelper(Stmt_IFLPExpRPStmtELSEStmt) {
     PARSE(son4);
     PARSE(son6);
 
-    // assert(isSameType(son2->sdti.type, type_int)); // L2 假设2
+    // assert(isSameType(son2->sdti.type, type_int)); // 假设2
 }
 
-SDTDefHelper(Stmt_WHILELPExpRPStmt) {
+SDTST2IRTDefHelper(Stmt_WHILELPExpRPStmt) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON4
@@ -423,12 +401,12 @@ SDTDefHelper(Stmt_WHILELPExpRPStmt) {
     PARSE(son2);
     PARSE(son4);
    
-    // assert(isSameType(son2->sdti.type, type_int)); // L2 假设2
+    // assert(isSameType(son2->sdti.type, type_int)); // 假设2
 }
 
  /* Local Definitions */
  /* DefList */
-SDTDefHelper(DefList_DefDefList) {
+SDTST2IRTDefHelper(DefList_DefDefList) {
     STnode->sdti.type = Fa->sdti.type;
     STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
@@ -438,13 +416,13 @@ SDTDefHelper(DefList_DefDefList) {
     PARSE(son1);    
 }
 
-SDTDefHelper(DefList_) {
+SDTST2IRTDefHelper(DefList_) {
     STnode->sdti.type = Fa->sdti.type;
     STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 }
 
  /* Def */
-SDTDefHelper(Def_SpecifierDecListSEMI) {
+SDTST2IRTDefHelper(Def_SpecifierDecListSEMI) {
     STnode->sdti.defining_struct = Fa->sdti.defining_struct;
     SON2
 
@@ -454,7 +432,7 @@ SDTDefHelper(Def_SpecifierDecListSEMI) {
 }
 
  /* DecList */
-SDTDefHelper(DecList_Dec) {
+SDTST2IRTDefHelper(DecList_Dec) {
     STnode->sdti.type = Fa->sdti.type;
     STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
@@ -462,7 +440,7 @@ SDTDefHelper(DecList_Dec) {
 
     PARSE(son0);
 } 
-SDTDefHelper(DecList_DecCOMMADecList) {
+SDTST2IRTDefHelper(DecList_DecCOMMADecList) {
     STnode->sdti.type = Fa->sdti.type;
     STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
@@ -473,7 +451,7 @@ SDTDefHelper(DecList_DecCOMMADecList) {
 }
 
  /* Dec */
-SDTDefHelper(Dec_VarDec) {
+SDTST2IRTDefHelper(Dec_VarDec) {
     STnode->sdti.type = Fa->sdti.type;
     STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
@@ -495,7 +473,7 @@ SDTDefHelper(Dec_VarDec) {
         }
     }
 }
-SDTDefHelper(Dec_VarDecASSIGNOPExp) {
+SDTST2IRTDefHelper(Dec_VarDecASSIGNOPExp) {
     STnode->sdti.type = Fa->sdti.type;
     STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
@@ -526,7 +504,7 @@ SDTDefHelper(Dec_VarDecASSIGNOPExp) {
 
  /* Expressions */
  /* Exp */
-SDTDefHelper(Exp_ExpASSIGNOPExp) {
+SDTST2IRTDefHelper(Exp_ExpASSIGNOPExp) {
     SON2
 
     PARSE(son0);
@@ -539,7 +517,7 @@ SDTDefHelper(Exp_ExpASSIGNOPExp) {
     STnode->sdti.type = son0->sdti.type;
 }
 
-SDTDefHelper(Exp_ExpLOGICExp) {
+SDTST2IRTDefHelper(Exp_ExpLOGICExp) {
     SON2
 
     PARSE(son0);
@@ -547,11 +525,11 @@ SDTDefHelper(Exp_ExpLOGICExp) {
 
     STnode->sdti.type = son0->sdti.type;
 
-    assert(isSameType(son0->sdti.type, type_int)); // L2 假设2
-    assert(isSameType(son2->sdti.type, type_int)); // L2 假设2
+    assert(isSameType(son0->sdti.type, type_int)); // 假设2
+    assert(isSameType(son2->sdti.type, type_int)); // 假设2
 }
 
-SDTDefHelper(Exp_ExpARITHMETICExp) {
+SDTST2IRTDefHelper(Exp_ExpARITHMETICExp) {
     SON2
 
     PARSE(son0);
@@ -570,7 +548,7 @@ SDTDefHelper(Exp_ExpARITHMETICExp) {
     // assert(isSameType(son0->sdti.type, type_int) || isSameType(son2->sdti.type, type_float)); // 假设2
 }
 
-SDTDefHelper(Exp_LPExpRP) {
+SDTST2IRTDefHelper(Exp_LPExpRP) {
     SON2
 
     PARSE(son1);
@@ -578,7 +556,7 @@ SDTDefHelper(Exp_LPExpRP) {
     STnode->sdti.type = son1->sdti.type;
 }
 
-SDTDefHelper(Exp_MINUSExp) {
+SDTST2IRTDefHelper(Exp_MINUSExp) {
     SON1
 
     PARSE(son1);
@@ -588,17 +566,17 @@ SDTDefHelper(Exp_MINUSExp) {
     assert(isSameType(son1->sdti.type, type_int) || isSameType(son1->sdti.type, type_float)); // 假设2
 }
 
-SDTDefHelper(Exp_NOTExp) {
+SDTST2IRTDefHelper(Exp_NOTExp) {
     SON1
 
     PARSE(son1);
 
     STnode->sdti.type = son1->sdti.type;
 
-    assert(isSameType(son1->sdti.type, type_int)); // L2 假设2
+    assert(isSameType(son1->sdti.type, type_int)); // 假设2
 }
 
-SDTDefHelper(Exp_IDLPArgsRP) {
+SDTST2IRTDefHelper(Exp_IDLPArgsRP) {
 
     SON3
     VAL_NAME(0)
@@ -621,7 +599,7 @@ SDTDefHelper(Exp_IDLPArgsRP) {
     SemanticAssert(type == NULL || isSameType(son2->sdti.type, type->u.function.args), SE_MISMATCHED_SIGNATURE, STnode->first_line);
 }
 
-SDTDefHelper(Exp_IDLPRP) {
+SDTST2IRTDefHelper(Exp_IDLPRP) {
     SON2
     VAL_NAME(0)
 
@@ -640,7 +618,7 @@ SDTDefHelper(Exp_IDLPRP) {
     }
 }
 
-SDTDefHelper(Exp_ExpLBExpRB) {
+SDTST2IRTDefHelper(Exp_ExpLBExpRB) {
     SON3
 
     PARSE(son0);
@@ -656,7 +634,7 @@ SDTDefHelper(Exp_ExpLBExpRB) {
     STnode->sdti.islval = 1;
 }
 
-SDTDefHelper(Exp_ExpDOTID) {
+SDTST2IRTDefHelper(Exp_ExpDOTID) {
     SON2
 
     PARSE(son0);
@@ -666,45 +644,47 @@ SDTDefHelper(Exp_ExpDOTID) {
     SemanticAssert(son0->sdti.type->kind == STRUCTURE, SE_ACCESS_TO_NON_STRUCT, STnode->first_line);
 
     if (son0->sdti.type->kind == STRUCTURE) {
-        FieldList fl = FieldListFind(name, son0->sdti.type->u.structure);
-        SemanticAssert(fl != NULL, SE_STRUCT_FIELD_UNDEFINED, STnode->first_line);
-        if (fl != NULL) {
-            Type type = fl->type;
+        Type type = FieldListFind(name, son0->sdti.type->u.structure);
+        SemanticAssert(type != NULL, SE_STRUCT_FIELD_UNDEFINED, STnode->first_line);
+        if (type != NULL)
             STnode->sdti.type = type;
-        } else {
+        else    
             STnode->sdti.type = type_int; // use int
-        }
     }
     else 
         STnode->sdti.type = type_int; // use int
     STnode->sdti.islval = 1;
 }
 
-SDTDefHelper(Exp_ID) {
+SDTST2IRTDefHelper(Exp_ID) {
+    IRnode(EXP)
     SON0
 
     VAL_NAME(0)
 
-    Type type = tableFindVar(name);
-    SemanticAssert(type != NULL, SE_VARIABLE_UNDEFINED, STnode->first_line);
+    IRTnode->u.irt_exp.kind = VAL;
+    IRTnode->u.irt_exp.result = NewOperand(VARIABLE, name, 0);
 
-    STnode->sdti.islval = 1;
-    if (type != NULL)
-        STnode->sdti.type = type;
-    else 
-        STnode->sdti.type = type_int; // use int
+    return IRTnode;
 }
 
-SDTDefHelper(Exp_INT) {
-    STnode->sdti.type = type_int;
+SDTST2IRTDefHelper(Exp_INT) {
+    IRnode(EXP)
+    SON0
+
+    IRTnode->u.irt_exp.kind = VAL;
+    IRTnode->u.irt_exp.result = NewOperand(CONSTANT, NULL, son0->ti.int_val);
+
+    return IRTnode;
 }
 
-SDTDefHelper(Exp_FLOAT) {
-    STnode->sdti.type = type_float;
+SDTST2IRTDefHelper(Exp_FLOAT) {
+    assert(0); // L3 假设 1
+    return NULL;
 }
 
  /* Args */
-SDTDefHelper(Args_ExpCOMMAArgs) {
+SDTST2IRTDefHelper(Args_ExpCOMMAArgs) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON2
@@ -721,7 +701,7 @@ SDTDefHelper(Args_ExpCOMMAArgs) {
     }
 }
 
-SDTDefHelper(Args_Exp) {
+SDTST2IRTDefHelper(Args_Exp) {
     STnode->sdti.type = Fa->sdti.type;
 
     SON0

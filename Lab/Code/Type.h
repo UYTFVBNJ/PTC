@@ -7,6 +7,7 @@ typedef struct FieldList_* FieldList;
 struct FieldList_ {
   char* name; // 域的名字 
   Type type; // 域的类型
+  int offset; // 域的偏移量
   FieldList tail; // 下一个域
 };
 
@@ -21,6 +22,7 @@ enum { BASIC, ARRAY, STRUCTURE, ARGS, FUNCTION };
 
 struct Type_ {
   int kind;
+  int size;
   union {
 // 基本类型
     int basic;
@@ -38,6 +40,6 @@ Type TypeNew(int kind, int declineno, int deflineno);
 FieldList FieldListNew(char *name, Type type, FieldList tail);
 int isSameType(Type a, Type b);
 int isSameField(FieldList a, FieldList b);
-Type FieldListFind(char *name, FieldList list);
+FieldList FieldListFind(char *name, FieldList list);
 
 #endif

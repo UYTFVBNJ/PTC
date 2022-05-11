@@ -10,6 +10,7 @@ STnode_t *STreeNewNode() {
     STnode->sdti.islval = 0;
     
     STnode->SDT_handler = NULL;
+    STnode->SDTIR_handler = NULL;
 
     STnode->son = NULL;
     STnode->next = NULL;
