@@ -1,7 +1,16 @@
+#include "STree.h"
 #include "IRTree.h"
+#include "Type.h"
+#include "Token.h"
+#include "SymbolTables.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+extern Type type_int, type_float, type_noneargs;
+
+// IRTree
 
 IRTnode_t *IRTreeNewNode(int kind) {
     IRTnode_t *IRTnode = (IRTnode_t *)malloc(sizeof(IRTnode_t));
@@ -9,34 +18,465 @@ IRTnode_t *IRTreeNewNode(int kind) {
     IRTnode->kind = kind;
 
     switch (kind) {
-        case EXP:
-            IRTnode->u.IRT_EXP_info = {};
+        case IRT_EXP:
+            IRTnode->u.irt_exp.kind = 0;
+            IRTnode->u.irt_exp.result = NULL;
+            IRTnode->u.irt_exp.func_name = NULL;
+            IRTnode->u.irt_exp.dec_size = 0;
+            IRTnode->u.irt_exp.T = NULL;
+            IRTnode->u.irt_exp.F = NULL;
+            IRTnode->u.irt_exp.END = NULL;
             break;
-        case COND:
-            IRTnode->u.IRT_COND_info = {};
+        case IRT_COND:
+            IRTnode->u.irt_cond.kind = 0;
+            IRTnode->u.irt_cond.T = NULL;
+            IRTnode->u.irt_cond.F = NULL;
+            IRTnode->u.irt_cond.relop = 0;
             break;
-        case STMT:
-            IRTnode->u.IRT_STMT_info = {};
+        case IRT_STMT:
+            IRTnode->u.irt_stmt.kind = 0;
             break;
-        case IRCODE:
-            IRTnode->u.IRT_IRCODE_info.code = NULL;
+        case IRT_FUNC:
+            IRTnode->u.irt_func.name = NULL;
+            IRTnode->u.irt_func.type = NULL;
             break;
         default:
           assert(0);  
     }
 
-    IRTnode->son  = NULL;
-    IRTnode->next = NULL;
+    for (int i = 0; i < 4; i ++) IRTnode->son[i] = NULL;
 
     return IRTnode;
 }
 
-Operand NewOperand(int kind, char *name, int value) {
+
+// Operand
+
+int type2opkind(Type type) {
+    switch (type->kind) {
+        case BASIC:
+            return OP_VARIABLE;
+            break;
+        case ARRAY:
+            return OP_ADDRESS;
+            break;
+        case STRUCTURE:
+            return OP_ADDRESS;
+            break;
+        default:
+            assert(0);
+    }
+}
+
+
+
+void NewVarOperandName(char *varop_name, int is_address) {
+    static int varop_cnt = 0;
+    if (is_address)
+        assert(snprintf(varop_name, OPERAND_NAME_SIZE_MAX, "&v%d", varop_cnt++) < OPERAND_NAME_SIZE_MAX);
+    else 
+        assert(snprintf(varop_name, OPERAND_NAME_SIZE_MAX, "v%d", varop_cnt++) < OPERAND_NAME_SIZE_MAX);
+}
+
+void NewTmpOperandName(char *tmpop_name) {
+    static int tmpop_cnt = 0;
+    assert(snprintf(tmpop_name, OPERAND_NAME_SIZE_MAX, "t%d", tmpop_cnt++) < OPERAND_NAME_SIZE_MAX);
+}
+
+Operand NewOperand(int kind, int is_var, int const_value, Type type) {
     Operand operand = (Operand)malloc(sizeof(struct Operand_));
+    
     operand->kind = kind;
-    if (name) {
-        strcpy(operand->name, name);
+    operand->type = type;
+
+    if (kind == OP_CONSTANT) {
+        assert(snprintf(operand->name, OPERAND_NAME_SIZE_MAX, "#%d", const_value) < OPERAND_NAME_SIZE_MAX);
     } else {
-        assert(snprintf(name, "#%d", value) < OPERAND_NAME_SIZE_MAX);
-    }    
+        if (is_var) {
+            NewVarOperandName(operand->name, kind == OP_ADDRESS && const_value == 0);
+        } else {
+            NewTmpOperandName(operand->name);
+        }    
+    }
+
+    return operand;
+}
+
+char *NewLabel() {
+    static int label_cnt = 0;
+    char *label = (char *)malloc(sizeof(char) * LABEL_NAME_SIZE_MAX);
+    assert(snprintf(label, LABEL_NAME_SIZE_MAX, "label%d", label_cnt++) < LABEL_NAME_SIZE_MAX);
+    return label;
+}   
+
+// Exp constructors
+
+IRTnode_t *IRTreeNewEXP_EXP_OP_EXP(int ret_kind, int opt_kind, IRTnode_t *IRTN0, IRTnode_t *IRTN1) {
+    // TODO: search for existing operand
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_EXP);
+    Operand result = NULL;
+    if (opt_kind != EXP_VTOV && opt_kind != EXP_DRA && opt_kind != EXP_PARAM && opt_kind != EXP_WRITE && opt_kind != EXP_DEC) 
+        result = NewOperand(ret_kind, 0, 0, type_int);
+    if (opt_kind == EXP_VTOV)    
+        result = IRTN0->u.irt_exp.result;
+    IRTnode->u.irt_exp.kind = opt_kind;
+    IRTnode->u.irt_exp.result = result;
+    IRTnode->son[0] = IRTN0;
+    IRTnode->son[1] = IRTN1;
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewEXP_OP_EXP(int ret_kind, int opt_kind, IRTnode_t *IRTN0) {
+    // TODO: search for existing operand
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_EXP);
+    Operand result = NewOperand(ret_kind, 0, 0, type_int);
+    IRTnode->u.irt_exp.kind = opt_kind;
+    IRTnode->u.irt_exp.result = result;
+    IRTnode->son[0] = IRTN0;
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewEXP_VAR(Operand op) {
+    // TODO: search for existing operand
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_EXP);
+    IRTnode->u.irt_exp.kind = EXP_VAL;
+    IRTnode->u.irt_exp.result = op;
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewEXP_CONST(int const_val) {
+    // TODO: search for existing operand
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_EXP);
+    IRTnode->u.irt_exp.kind = EXP_VAL;
+    IRTnode->u.irt_exp.result = NewOperand(OP_CONSTANT, 0, const_val, type_int);
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewEXP_ASSIGN(IRTnode_t *IRTN0, IRTnode_t *IRTN1) {
+    if (IRTN0->u.irt_exp.result->type->kind != BASIC) {
+        // TODO: array ASSIGNMENT !!!
+        assert(0);
+    } else {
+        // 假设左边一定是数组或者变量
+        if (IRTN0->u.irt_exp.result->kind == OP_ADDRESS && IRTN1->u.irt_exp.result->kind == OP_ADDRESS) {
+            // IRTnode_t *IRTnode;
+            // IRTnode = IRTreeNewEXP_OP_EXP(OP_VARIABLE, EXP_DRA, IRTN1);
+            // IRTnode = IRTreeNewEXP_EXP_OP_EXP(OP_VARIABLE, EXP_REA, IRTN0, IRTnode);
+            // return IRTnode; 
+            assert(0);
+        } else 
+        if (IRTN0->u.irt_exp.result->kind == OP_ADDRESS && IRTN1->u.irt_exp.result->kind != OP_ADDRESS) {
+            // return IRTreeNewEXP_EXP_OP_EXP(OP_VARIABLE, EXP_REA, IRTN0, IRTN1); 
+            assert(0);
+        } else 
+        if (IRTN0->u.irt_exp.result->kind == OP_VARIABLE && IRTN1->u.irt_exp.result->kind == OP_ADDRESS) {
+            // IRTnode_t *IRTnode;
+            // IRTnode = IRTreeNewEXP_OP_EXP(OP_VARIABLE, EXP_DRA, IRTN1);
+            // IRTnode = IRTreeNewEXP_EXP_OP_EXP(OP_VARIABLE, EXP_VTOV, IRTN0, IRTnode);
+            // return IRTnode; 
+            assert(0);
+        } else 
+        if (IRTN0->u.irt_exp.result->kind == OP_VARIABLE && IRTN1->u.irt_exp.result->kind != OP_ADDRESS) {
+            return IRTreeNewEXP_EXP_OP_EXP(OP_VARIABLE, EXP_VTOV, IRTN0, IRTN1); 
+        }
+    }
+    assert(0);
+}
+
+IRTnode_t *IRTreeNewEXP_CALL(char *name, IRTnode_t *IRTN) {
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_EXP);
+    IRTnode->u.irt_exp.kind = EXP_CALL;
+    IRTnode->u.irt_exp.result = NewOperand(OP_VARIABLE, 0, 0, type_int); // L3 假设5
+    IRTnode->u.irt_exp.func_name = name;
+    IRTnode->son[0] = IRTN;
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewEXP_ARG(IRTnode_t *IRTN0, IRTnode_t *IRTN1) {
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_EXP);
+    IRTnode->u.irt_exp.kind = EXP_ARG;
+    IRTnode->u.irt_exp.result = IRTN0->u.irt_exp.result;
+    IRTnode->son[0] = IRTN0;
+    IRTnode->son[1] = IRTN1;
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewEXP_PARAM(STnode_t *STnode, FieldList fl) {
+    if (fl == NULL) return NULL;
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_EXP);
+    IRTnode->u.irt_exp.kind = EXP_PARAM;
+    IRTnode->u.irt_exp.result = tableFindVarOp(STnode, fl->name);
+    IRTnode->son[0] = IRTreeNewEXP_PARAM(STnode, fl->tail);
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewEXP_READ() {
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_EXP);
+    IRTnode->u.irt_exp.kind = EXP_READ;
+    IRTnode->u.irt_exp.result = NewOperand(OP_VARIABLE, 0, 0, type_int);
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewEXP_WRITE(IRTnode_t *IRTN) {
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_EXP);
+    IRTnode->u.irt_exp.kind = EXP_WRITE;
+    IRTnode->u.irt_exp.result = NewOperand(OP_VARIABLE, 0, 0, type_int);
+    IRTnode->son[0] = IRTN;
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewEXP_DEC(IRTnode_t *IRTN, int dec_size) {
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_EXP);
+    IRTnode->u.irt_exp.kind = EXP_DEC;
+    IRTnode->u.irt_exp.result = NULL;
+    IRTnode->u.irt_exp.dec_size = dec_size;
+    IRTnode->son[0] = IRTN;
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewEXP_DRA(IRTnode_t *IRTN) {
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_EXP);
+    IRTnode->u.irt_exp.kind = EXP_DRA;
+    IRTnode->u.irt_exp.result = NewOperand(OP_VARIABLE, 0, 0, type_int); 
+    assert(snprintf(IRTnode->u.irt_exp.result->name, OPERAND_NAME_SIZE_MAX, "*%s", IRTN->u.irt_exp.result->name) < OPERAND_NAME_SIZE_MAX);
+    IRTnode->son[0] = IRTN;
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewEXP_COND(IRTnode_t *IRTN, char *T, char *F, char *END) {
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_EXP);
+    IRTnode->u.irt_exp.kind = EXP_COND;
+    IRTnode->u.irt_exp.result = NewOperand(OP_VARIABLE, 0, 0, type_int); 
+    IRTnode->u.irt_exp.T = T;
+    IRTnode->u.irt_exp.F = F;
+    IRTnode->u.irt_exp.END = END;
+    IRTnode->son[0] = IRTN;
+    return IRTnode;
+}
+// Cond constructors
+
+IRTnode_t *IRTreeNewCOND(IRTnode_t *IRTN, char *T, char *F) {
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_COND);
+
+    assert(T);
+    IRTnode->u.irt_cond.T = T;
+    IRTnode->u.irt_cond.F = F;
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewCOND_RELOP(IRTnode_t *IRTN0, IRTnode_t *IRTN1, int relop, char *T, char *F) {
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_COND); 
+    IRTnode->u.irt_cond.relop = relop;
+    assert(T);
+    IRTnode->u.irt_cond.T = T;
+    IRTnode->u.irt_cond.F = F;
+    IRTnode->son[0] = IRTN0;
+    IRTnode->son[1] = IRTN1;
+    return IRTnode;
+}
+
+// Stmt constructors
+
+
+IRTnode_t *IRTreeNewSTMT_RETURN(IRTnode_t *IRTN) {
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_STMT);
+    IRTnode->u.irt_stmt.kind = STMT_RETURN;
+    IRTnode->son[0] = IRTN;
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewSTMT_THEN(IRTnode_t *IRTN0, IRTnode_t *IRTN1, IRTnode_t *IRTN2) {
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_STMT);
+    IRTnode->u.irt_stmt.kind = STMT_THEN;
+    IRTnode->son[0] = IRTN0;
+    IRTnode->son[1] = IRTN1;
+    IRTnode->son[2] = IRTN2;
+    return IRTnode;
+}
+
+
+// Func constructors
+IRTnode_t *IRTreeNewFUNC(char *name, Type type, IRTnode_t *IRTN0, IRTnode_t *IRTN1) {
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_FUNC);
+    IRTnode->u.irt_func.name = name;
+    IRTnode->u.irt_func.type = type;
+    IRTnode->son[0] = IRTN0;
+    IRTnode->son[1] = IRTN1;
+    return IRTnode;
+}
+
+IRTnode_t *IRTreeNewFUNC_THEN(IRTnode_t *IRTN0, IRTnode_t *IRTN1) {
+    IRTnode_t *IRTnode = IRTreeNewNode(IRT_FUNC);
+    IRTnode->son[0] = IRTN0;
+    IRTnode->son[1] = IRTN1;
+    return IRTnode;
+}
+
+// Translate to IR
+
+void IRTreeTranslateEXP(IRTnode_t *IRTnode) {
+    if (IRTnode->u.irt_exp.kind == EXP_VAL) 
+        return ;
+    switch (IRTnode->u.irt_exp.kind) {
+        case EXP_VTOV:
+            printf("%s := %s\n", IRTnode->son[0]->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name);
+            break;
+        case EXP_VTOA:
+            assert(IRTnode->son[1] == NULL);
+            printf("%s := &%s\n", IRTnode->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name);
+            break;
+        case EXP_DRA:
+            // assert(IRTnode->son[1] == NULL);
+            // printf("%s := *%s\n", IRTnode->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name);
+            break;
+        case EXP_REA:
+            printf("*%s := %s\n", IRTnode->son[0]->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name);
+            printf("%s := %s\n",  IRTnode->u.irt_exp.result->name,         IRTnode->son[1]->u.irt_exp.result->name);
+            break;
+        case EXP_ADD:
+            printf("%s := %s + %s\n", IRTnode->u.irt_exp.result->name, IRTnode->son[0]->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name);
+            break;
+        case EXP_SUB:
+            printf("%s := %s - %s\n", IRTnode->u.irt_exp.result->name, IRTnode->son[0]->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name);
+            break;
+        case EXP_MUL:
+            printf("%s := %s * %s\n", IRTnode->u.irt_exp.result->name, IRTnode->son[0]->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name);
+            break;
+        case EXP_DIV:
+            printf("%s := %s / %s\n", IRTnode->u.irt_exp.result->name, IRTnode->son[0]->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name);
+            break;
+        case EXP_CALL:
+            printf("%s := CALL %s\n", IRTnode->u.irt_exp.result->name, IRTnode->u.irt_exp.func_name);
+            break;
+        case EXP_ARG:
+            // if (IRTnode->u.irt_exp.result->kind == OP_ADDRESS) 
+                // printf("ARG %s\n", IRTnode->u.irt_exp.result->name + 1);
+            // else    
+                printf("ARG %s\n", IRTnode->u.irt_exp.result->name);
+            break;
+        case EXP_PARAM:
+            // if (IRTnode->u.irt_exp.result->kind == OP_ADDRESS) 
+                // printf("PARAM %s\n", IRTnode->u.irt_exp.result->name + 1);
+            // else    
+                // printf("PARAM %s\n", IRTnode->u.irt_exp.result->name);
+            break;
+        case EXP_READ:
+            printf("READ %s\n", IRTnode->u.irt_exp.result->name);
+            break;
+        case EXP_WRITE:
+            printf("WRITE %s\n", IRTnode->son[0]->u.irt_exp.result->name);
+            printf("%s := #0\n", IRTnode->u.irt_exp.result->name);
+            break;
+        case EXP_DEC:
+            printf("DEC %s %d\n", (IRTnode->son[0]->u.irt_exp.result->name) + 1, IRTnode->u.irt_exp.dec_size);
+            break;
+        case EXP_COND:
+            printf("LABEL %s :\n", IRTnode->u.irt_exp.T);
+            printf("%s := #1\n", IRTnode->u.irt_exp.result->name);
+            printf("GOTO %s\n", IRTnode->u.irt_exp.END);
+            printf("LABEL %s :\n", IRTnode->u.irt_exp.F);
+            printf("%s := #0\n", IRTnode->u.irt_exp.result->name);
+            printf("LABEL %s :\n", IRTnode->u.irt_exp.END);
+            break;
+        default:
+            assert(0);
+    }
+ }
+ 
+void IRTreeTranslateSTMT(IRTnode_t *IRTnode) {
+    if (IRTnode->u.irt_stmt.kind == STMT_RETURN) {
+        printf("RETURN %s\n", IRTnode->son[0]->u.irt_exp.result->name);
+    }
+}
+
+void IRTreeTranslateCOND(IRTnode_t *IRTnode) {
+    if (IRTnode->u.irt_cond.kind == COND_RELOP) {
+        char *op;
+        switch (IRTnode->u.irt_cond.relop) {
+            case RELOP_EQ:
+                op = "==";
+                break;
+            case RELOP_NE:
+                op = "!=";
+                break;
+            case RELOP_LT:
+                op = "<";
+                break;
+            case RELOP_LE:
+                op = "<=";
+                break;
+            case RELOP_GT:
+                op = ">";
+                break;
+            case RELOP_GE:
+                op = ">=";
+                break;
+            default:
+                assert(0);
+        }
+        printf("IF %s %s %s GOTO %s\n", IRTnode->son[0]->u.irt_exp.result->name, op, IRTnode->son[1]->u.irt_exp.result->name, IRTnode->u.irt_cond.T);
+        printf("GOTO %s\n", IRTnode->u.irt_cond.F);
+    }
+    if (IRTnode->u.irt_cond.kind == COND_IS0) {
+        printf("IF %s != %s GOTO %s\n", IRTnode->son[0]->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name, IRTnode->u.irt_cond.T);
+        printf("GOTO %s\n", IRTnode->u.irt_cond.F);
+    }
+}
+
+// void PARAMprinter(FieldList params) {
+    // if (params == NULL)
+        // return ;
+    // printf("%s ", params->name);
+    // PARAMprinter(params->tail);
+// }
+
+void IRTreeTranslateFUNC(IRTnode_t *IRTnode) {
+    if (IRTnode->u.irt_func.type) {
+        printf("FUNCTION %s :\n", IRTnode->u.irt_func.name);
+        // PARAMprinter(IRTnode->u.irt_func.type->u.function.ret->u.structure);
+    }
+}
+
+void IRTreeTranslate(IRTnode_t *IRTnode) {
+    if (IRTnode == NULL) {
+        return ;
+    }
+    
+    // printf("IRTreeTranslate %p\n", IRTnode);
+    // printf("IRTreeTranslate %d\n", IRTnode->kind);
+
+    if (IRTnode->label_head)
+        printf("LABEL %s :\n", IRTnode->label_head);
+
+    if (IRTnode->kind == IRT_FUNC) {
+        IRTreeTranslateFUNC(IRTnode);
+    }
+    if (IRTnode->kind == IRT_EXP && IRTnode->u.irt_exp.kind == EXP_PARAM) {
+        printf("PARAM %s\n", IRTnode->u.irt_exp.result->name);
+    }
+
+    for (int i = 0; i < 4; i++) if (IRTnode->son[i] != NULL)
+        IRTreeTranslate(IRTnode->son[i]);
+
+    switch (IRTnode->kind) {
+        case IRT_EXP:
+            IRTreeTranslateEXP(IRTnode);
+            break;
+        case IRT_STMT:
+            IRTreeTranslateSTMT(IRTnode);
+            break;
+        case IRT_COND:
+            IRTreeTranslateCOND(IRTnode);
+            break;
+        case IRT_FUNC:
+            break;
+        default:
+            assert(0);
+    }
+
+    if (IRTnode->goto_label)
+        printf("GOTO %s\n", IRTnode->goto_label);
+
+    if (IRTnode->label_tail)
+        printf("LABEL %s :\n", IRTnode->label_tail);
 }

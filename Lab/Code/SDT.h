@@ -11,8 +11,11 @@ typedef struct SDT_info_t {
     char *name;
     Type defining_struct;
     Type type;
+    Type array_type;
     int islval;
     SkipListStack_t *VarTableStack;
+
+    char *true_label, *false_label;
 } SDT_info_t;
 
 typedef struct STnode_t STnode_t;

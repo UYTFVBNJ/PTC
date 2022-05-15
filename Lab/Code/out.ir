@@ -1,0 +1,46 @@
+FUNCTION main :
+IF #62159 != #0 GOTO label9
+GOTO label8
+LABEL label8 :
+t0 := #1
+GOTO label10
+LABEL label9 :
+t0 := #0
+LABEL label10 :
+t1 := t0 + #23290
+IF t1 != #6632 GOTO label6
+GOTO label7
+LABEL label6 :
+t2 := #1
+GOTO label11
+LABEL label7 :
+t2 := #0
+LABEL label11 :
+t3 := #0 - #28578
+IF t2 != t3 GOTO label4
+GOTO label5
+LABEL label4 :
+t4 := #1
+GOTO label12
+LABEL label5 :
+t4 := #0
+LABEL label12 :
+IF t4 == #63528 GOTO label2
+GOTO label3
+LABEL label2 :
+t5 := #1
+GOTO label13
+LABEL label3 :
+t5 := #0
+LABEL label13 :
+IF t5 >= #60483 GOTO label0
+GOTO label1
+LABEL label0 :
+t6 := #1
+GOTO label14
+LABEL label1 :
+t6 := #0
+LABEL label14 :
+WRITE t6
+t7 := #0
+RETURN #0

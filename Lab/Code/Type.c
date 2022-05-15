@@ -9,21 +9,56 @@ struct Type_ type_int_ = {
     .size = 4,
     .u.basic = TYPE_INT,
 };
-const Type type_int = &type_int_;
+Type type_int = &type_int_;
 
 struct Type_ type_float_ = {
     .kind = BASIC, 
     .size = -1,
     .u.basic = TYPE_FLOAT,
 };
-const Type type_float = &type_float_;
+Type type_float = &type_float_;
 
 struct Type_ type_noneargs_ = {
     .kind = ARGS, 
     .size = -1,
     .u.structure = NULL,
 };
-const Type type_noneargs = &type_noneargs_;
+Type type_noneargs = &type_noneargs_;
+
+
+struct FieldList_ fl_argint_ = {
+    .name = "input",
+    .type = &type_int_,
+    .offset = 0,
+    .tail = NULL,
+};
+
+struct Type_ type_argint_ = {
+    .kind = ARGS, 
+    .size = -1,
+    .u.structure = &fl_argint_,
+};
+Type type_argint = &type_argint_;
+
+struct Type_ type_read_ = {
+    .kind = FUNCTION, 
+    .size = -1,
+    .u.function.name = "read",
+    .u.function.args = &type_noneargs_,
+    .u.function.ret = &type_int_,
+
+};
+Type type_read = &type_read_;
+
+struct Type_ type_write_ = {
+    .kind = FUNCTION, 
+    .size = -1,
+    .u.function.name = "write",
+    .u.function.args = &type_argint_,
+    .u.function.ret = &type_int_,
+
+};
+Type type_write = &type_write_;
 
 
 

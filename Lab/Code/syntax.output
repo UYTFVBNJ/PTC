@@ -142,74 +142,75 @@ Terminals, with rules where they appear
     INT (283) 22 78
     FLOAT (284) 79
     ID (285) 18 20 21 24 25 69 70 71 76 77
-    LOWER_THAN_ELSE (286)
+    NEG (286)
+    LOWER_THAN_ELSE (287)
 
 
 Nonterminals, with rules where they appear
 
-    $accept (32)
+    $accept (33)
         on left: 0
-    Program (33)
+    Program (34)
         on left: 1
         on right: 0
-    ExtDefList (34)
+    ExtDefList (35)
         on left: 2 3
         on right: 1 2
-    ExtDef (35)
+    ExtDef (36)
         on left: 4 5 6 7 8 9 10
         on right: 2
-    ExtDecList (36)
+    ExtDecList (37)
         on left: 11 12
         on right: 4 12
-    Specifier (37)
+    Specifier (38)
         on left: 13 14
         on right: 4 5 6 7 8 9 29 49 50
-    StructSpecifier (38)
+    StructSpecifier (39)
         on left: 15 16 17
         on right: 14
-    OptTag (39)
+    OptTag (40)
         on left: 18 19
         on right: 15 16
-    Tag (40)
+    Tag (41)
         on left: 20
         on right: 17
-    VarDec (41)
+    VarDec (42)
         on left: 21 22 23
         on right: 11 12 22 23 29 53 54
-    FunDec (42)
+    FunDec (43)
         on left: 24 25 26
         on right: 6 7 9
-    VarList (43)
+    VarList (44)
         on left: 27 28
         on right: 24 27
-    ParamDec (44)
+    ParamDec (45)
         on left: 29
         on right: 27 28
-    CompSt (45)
+    CompSt (46)
         on left: 30 31 32
         on right: 6 8 9 37
-    StmtList (46)
+    StmtList (47)
         on left: 33 34
         on right: 30 32 33
-    Stmt (47)
+    Stmt (48)
         on left: 35 36 37 38 39 40 41 42 43 44 45 46
         on right: 33 40 41 42 43 44 45 46
-    DefList (48)
+    DefList (49)
         on left: 47 48
         on right: 15 30 31 32 47
-    Def (49)
+    Def (50)
         on left: 49 50
         on right: 47
-    DecList (50)
+    DecList (51)
         on left: 51 52
         on right: 49 52
-    Dec (51)
+    Dec (52)
         on left: 53 54
         on right: 51 52
-    Exp (52)
+    Exp (53)
         on left: 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79
         on right: 35 38 40 42 44 45 54 55 56 57 58 59 60 61 62 63 67 68 72 73 74 75 76 80 81
-    Args (53)
+    Args (54)
         on left: 80 81
         on right: 69 80
 
@@ -1119,10 +1120,8 @@ State 86
    75    | Exp . LB error RC
    76    | Exp . DOT ID
 
-    STAR  shift, and go to state 104
-    DIV   shift, and go to state 105
-    DOT   shift, and go to state 106
-    LB    shift, and go to state 107
+    DOT  shift, and go to state 106
+    LB   shift, and go to state 107
 
     $default  reduce using rule 67 (Exp)
 

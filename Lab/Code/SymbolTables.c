@@ -1,9 +1,16 @@
 #include "SymbolTables.h"
+#include "IRTree.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
 SkipListStack_t *SkipListStackNew(SkipListStack_t *prev);
+
+int sdt_is_param = 0;
+
+// read
+extern Type type_read;
+extern Type type_write;
 
 // Symbol tables
 SkipList_t StructTable_, FuncTable_;
@@ -16,7 +23,11 @@ int SymbolTableCmp(void *a, void *b) {
 
 void initSymbolTables() {
     SLInit(StructTable, SymbolTableCmp);
+    
     SLInit(FuncTable, SymbolTableCmp);
+    tableAddFunc("read", type_read);
+    tableAddFunc("write", type_write);
+
     VarTableStack = SkipListStackNew(NULL);
 }
 
@@ -41,39 +52,39 @@ SkipListNode_t *tableGetFuncList() {
 }
 
 
-Var_info_t *NewVar_info_t(Type type) {
-    Var_info_t *var_info = (Var_info_t *)malloc(sizeof(Var_info_t));
-    var_info->type = type;
-    // var_info->op = NewOperand(type);
-    var_info->op = NULL;
+Operand NewVarOperand(Type type) {
+    // if (is_param)
+        // return NewOperand(type2opkind(type), 1, 1, type);
+    // else    
+        return NewOperand(type2opkind(type), 1, sdt_is_param, type);
 }
 
 void tableAddVar(char *name, Type type) {
-    SLInsert(&(VarTableStack->table), name, NewVar_info_t(type));
+    SLInsert(&(VarTableStack->table), name, NewVarOperand(type));
 }
 
 Type tableFindVar(char *name) {
     for (SkipListStack_t *cur = VarTableStack; cur; cur = cur->prev) {
-        Var_info_t *var_info = SLLookup(&(cur->table), name);
-        if (var_info)
-            return var_info->type;
+        Operand op = SLLookup(&(cur->table), name);
+        if (op)
+            return op->type;
     }
     return NULL;
 }
 
 Type tableFindCurrVar(char *name) {
-    Var_info_t *var_info = SLLookup(&(VarTableStack->table), name);
-    if (var_info)
-        return var_info->type;
+    Operand op = SLLookup(&(VarTableStack->table), name);
+    if (op)
+        return op->type;
     else 
         return NULL;
 }
 
-Operand tableFindVarOp(char *name) {
-    for (SkipListStack_t *cur = VarTableStack; cur; cur = cur->prev) {
-        Var_info_t *var_info = SLLookup(&(cur->table), name);
-        if (var_info)
-            return var_info->op;
+Operand tableFindVarOp(STnode_t *STnode, char *name) {
+    for (SkipListStack_t *cur = STnode->sdti.VarTableStack; cur; cur = cur->prev) {
+        Operand op = SLLookup(&(cur->table), name);
+        if (op)
+            return op;
     }
     return NULL;
 }

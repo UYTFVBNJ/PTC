@@ -1,11 +1,10 @@
 #include "SDTST2IRT.h"
-#include "STree.h"
-#include "IRTree.h"
 #include "SkipList.h"
 #include "SemanticErrors.h"
 #include "SymbolTables.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 
@@ -18,11 +17,16 @@
 #define SON5 SON4 STnode_t *son5 = (STnode->son->next->next->next->next->next);
 #define SON6 SON5 STnode_t *son6 = (STnode->son->next->next->next->next->next->next);
 
-#define IRnode(kind) IRTnode_t *IRTnode = IRTreeNewNode(kind);
-#define SET0(IRTnode) IRTnode->son = IRTnode;
-#define SET1(IRTnode) IRTnode->son->next = IRTnode;
-#define SET2(IRTnode) IRTnode->son->next->next = IRTnode;
-#define SET3(IRTnode) IRTnode->son->next->next->next = IRTnode;
+// #define IRnode(kind) IRTnode_t *IRTnode = IRTreeNewNode(kind);
+#define SET0(IRTnode) IRTnode_t *IRTson0 = IRTnode;
+#define SET1(IRTnode) IRTnode_t *IRTson1 = IRTnode;
+#define SET2(IRTnode) IRTnode_t *IRTson2 = IRTnode;
+#define SET3(IRTnode) IRTnode_t *IRTson3 = IRTnode;
+#define SET4(IRTnode) IRTnode_t *IRTson4 = IRTnode;
+#define SET5(IRTnode) IRTnode_t *IRTson5 = IRTnode;
+#define SET6(IRTnode) IRTnode_t *IRTson6 = IRTnode;
+
+#define SET_TF_LABEL(son, T, F) son->sdti.true_label = T; son->sdti.false_label = F;
 
 #define PARSE(son) son->SDTST2IRT_handler(son, STnode)
 
@@ -38,542 +42,490 @@ void prtname(STnode_t *STnode);
 SDTST2IRTDefHelper(Program_ExtDefList) {
     SON0
 
-    PARSE(son0);
+    SET0(PARSE(son0));
+
+    return IRTson0;
 }
 
  /* ExtDefList */
 SDTST2IRTDefHelper(ExtDefList_ExtDefExtDefList) {
     SON1
 
-    PARSE(son0);
-    PARSE(son1);
+    SET0(PARSE(son0));
+    SET1(PARSE(son1));
+
+    return IRTreeNewFUNC_THEN(IRTson0, IRTson1);
 }
 
 SDTST2IRTDefHelper(ExtDefList_) {
     
+    return NULL;
 }
 
  /* ExtDef */
 SDTST2IRTDefHelper(ExtDef_SpecifierExtDecListSEMI) {
-    SON2
+    return NULL;
 
-    PARSE(son0);
-    STnode->sdti.type = son0->sdti.type;
-    PARSE(son1);
 }
 SDTST2IRTDefHelper(ExtDef_SpecifierSEMI) {
-    SON1
+    return NULL;
 
-    PARSE(son0);
 }
 SDTST2IRTDefHelper(ExtDef_SpecifierFunDecCompSt) {
     SON2
 
-    STnode->sdti.type = TypeNew(FUNCTION, STnode->first_line, STnode->first_line);
-    STnode->sdti.type->u.function.args = TypeNew(ARGS, STnode->first_line, STnode->first_line);
+    SET0(PARSE(son0));
 
-    PARSE(son0);
-    STnode->sdti.type->u.function.ret = son0->sdti.type;
+    SET1(PARSE(son1));
+    SET2(PARSE(son2));
 
-    PARSE(son1);
-    STnode->sdti.type->u.function.name = son1->sdti.name;
+    // TODO create TABLE
+    
 
-    // check if function name is already defined
-    Type func = tableFindFunc(STnode->sdti.type->u.function.name);
-    if (func != NULL) {
-        SemanticAssert(func->deflineno == -1, SE_FUNCTION_DUPLICATE, STnode->first_line);
-        SemanticAssert(func->deflineno != -1 || isSameType(STnode->sdti.type, func), SE_FUNCTION_CONFLICTING, STnode->first_line);
 
-        // TODO memory leak
-        STnode->sdti.type = func;
-        STnode->sdti.type->deflineno = STnode->first_line;
-    } else  
-        tableAddFunc(son1->sdti.name, STnode->sdti.type);
-
-    PARSE(son2);
+    char *name = son1->son->ti.id_val;
+    return IRTreeNewFUNC(name, STnode->sdti.type, IRTreeNewEXP_PARAM(son2, STnode->sdti.type->u.function.args->u.structure), IRTson2);
 }
 SDTST2IRTDefHelper(ExtDef_SpecifierFunDecSEMI) {
-    SON2
 
-    STnode->sdti.type = TypeNew(FUNCTION, STnode->first_line, -1);
-    STnode->sdti.type->u.function.args = TypeNew(ARGS, STnode->first_line, STnode->first_line);
-
-    PARSE(son0);
-    STnode->sdti.type->u.function.ret = son0->sdti.type;
-
-    PARSE(son1);
-    STnode->sdti.type->u.function.name = son1->sdti.name;
-
-    // check if function name is already defined
-    Type func = tableFindFunc(STnode->sdti.type->u.function.name);
-    if (func != NULL) {
-        SemanticAssert(isSameType(STnode->sdti.type, func), SE_FUNCTION_CONFLICTING, STnode->first_line);
-
-        // TODO memory leak
-        STnode->sdti.type = func;
-    } else  
-        tableAddFunc(son1->sdti.name, STnode->sdti.type);
+    return NULL;
 }
 
  /* ExtDecList */
 SDTST2IRTDefHelper(ExtDecList_VarDec) {
-    STnode->sdti.type = Fa->sdti.type;
 
-    SON0
-
-    PARSE(son0);
-
-    SemanticAssert(tableFindCurrVar(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
-    SemanticAssert(tableFindStruct(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
-
-    if (!hasErr) {
-        tableAddVar(son0->sdti.name, son0->sdti.type);
-    }
+    return NULL;
 }
 
 SDTST2IRTDefHelper(ExtDecList_VarDecCOMMAExtDecList) {
-    STnode->sdti.type = Fa->sdti.type;
 
-    SON2
-
-    PARSE(son0);
-    PARSE(son2);
-    
-    SemanticAssert(tableFindCurrVar(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
-    SemanticAssert(tableFindStruct(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
-
-
-    if (!hasErr) {
-        tableAddVar(son0->sdti.name, son0->sdti.type);
-    }
+    return NULL;
 }
 
  /* Specifiers */
  /* Specifier */
 SDTST2IRTDefHelper(Specifier_TYPE) {
-    switch (STnode->son->ti.type_val) {
-        case TYPE_INT:
-            STnode->sdti.type = type_int;
-            break;
-        case TYPE_FLOAT:
-            STnode->sdti.type = type_float;
-            break;
-        default:
-            assert(0);
-    }
+    
+    return NULL;
 }
 SDTST2IRTDefHelper(Specifier_StructSpecifier) {
-    SON0
+    return NULL;
 
-    PARSE(son0);
-
-    STnode->sdti.type = son0->sdti.type;
 }
  /* StructSpecifier */
 SDTST2IRTDefHelper(StructSpecifier_STRUCTOptTagLCDefListRC) {
-    SON4
+    return NULL;
 
-    PARSE(son1);
-
-    STnode->sdti.name = son1->sdti.name;
-    SemanticAssert(son1->sdti.name == NULL || (tableFindStruct(son1->sdti.name) == NULL && tableFindVar(son1->sdti.name) == NULL), SE_STRUCT_DUPLICATE, STnode->first_line);
-    STnode->sdti.type = TypeNew(STRUCTURE, STnode->first_line, STnode->first_line);
-
-    if (!hasErr) {
-        if (STnode->sdti.name)
-            tableAddStruct(STnode->sdti.name, STnode->sdti.type);
-    }
-
-    STnode->sdti.defining_struct = STnode->sdti.type;
-    PARSE(son3);    
 }
 
 SDTST2IRTDefHelper(StructSpecifier_STRUCTTag) {
-    SON1
+    return NULL;
 
-    PARSE(son1);
-
-    STnode->sdti.type = tableFindStruct(son1->sdti.name);
-    SemanticAssert(STnode->sdti.type != NULL, SE_STRUCT_UNDEFINED, STnode->first_line);
 }
  /* OptTag */
 SDTST2IRTDefHelper(OptTag_ID) {
-    SON0
-    VAL_NAME(0)
 
-    STnode->sdti.name = name;
+    return NULL;
 }
 
 SDTST2IRTDefHelper(OptTag_) {
-    // TODO has problem ?
-    STnode->sdti.name = NULL;
+
+    return NULL;
 }
 
  /* Tag */
 SDTST2IRTDefHelper(Tag_ID) {
-    SON0
-    VAL_NAME(0)
 
-    STnode->sdti.name = name;
+
+    return NULL;
 }
 
  /* Declarators */
  /* VarDec */
 SDTST2IRTDefHelper(VarDec_ID) {
-    STnode->sdti.type = Fa->sdti.type;
-
+    // TODO
     SON0
     VAL_NAME(0)
 
-    STnode->sdti.name = name;
 }
 
 SDTST2IRTDefHelper(VarDec_VarDecLBINTRB) {
-    STnode->sdti.type = Fa->sdti.type;
-    
+    // TODO    
     SON3
     
     PARSE(son0);
-
-    // order: 
-    // int a[10][20]
-    // int -> elem 10 -> elem 20 -> array
-    STnode->sdti.name = son0->sdti.name;
-    STnode->sdti.type = TypeNew(ARRAY, STnode->first_line, STnode->first_line);
-    STnode->sdti.type->u.array.elem = son0->sdti.type;
-    STnode->sdti.type->u.array.size = son2->ti.int_val;
 }
 
  /* FunDec */
 SDTST2IRTDefHelper(FunDec_IDLPVarListRP) {
-    STnode->sdti.type = Fa->sdti.type->u.function.args;
-
-    SON3
-    VAL_NAME(0)
-
-    STnode->sdti.name = name;
-
-    PARSE(son2);
+    return NULL;
 }
 SDTST2IRTDefHelper(FunDec_IDLPRP) {
-    STnode->sdti.type = Fa->sdti.type->u.function.args;
-
-    SON2
-    VAL_NAME(0)
-
-    STnode->sdti.name = name;
+    return NULL;
 }
 
  /* VarList */
 SDTST2IRTDefHelper(VarList_ParamDecCOMMAVarList) {
-    STnode->sdti.type = Fa->sdti.type;
 
     SON2
 
     PARSE(son0);
     PARSE(son2);
 
-    assert(STnode->sdti.type->kind == ARGS);
-    if (STnode->sdti.type->kind == ARGS) {
-        // order: 
-        // int a, float b
-        // int a -> tail float b -> struct
-        STnode->sdti.type->u.structure = FieldListNew(son0->sdti.name, son0->sdti.type, STnode->sdti.type->u.structure); // add to head
-    }
+    
 }
 SDTST2IRTDefHelper(VarList_ParamDec) {
-    STnode->sdti.type = Fa->sdti.type;
 
     SON0
 
     PARSE(son0);
 
-    assert(STnode->sdti.type->kind == ARGS);
-    if (STnode->sdti.type->kind == ARGS) {
-        STnode->sdti.type->u.structure = FieldListNew(son0->sdti.name, son0->sdti.type, STnode->sdti.type->u.structure);
-    }
+    
 }
 
  /* ParamDec */
 SDTST2IRTDefHelper(ParamDec_SpecifierVarDec) {
-    SON1
-
-    PARSE(son0);
-    STnode->sdti.type = son0->sdti.type; // should be son1 because a[10]
-    PARSE(son1);
-
-    STnode->sdti.type = son1->sdti.type; // should be son1 because a[10]
-    STnode->sdti.name = son1->sdti.name;
+    return NULL;
 }
 
  /* Statements */
  /* CompSt */
 SDTST2IRTDefHelper(CompSt_LCDefListStmtListRC) {
-    STnode->sdti.type = Fa->sdti.type;
     SON3
-    varStackPush();
-    if (!(STnode->sdti.type->u.function.addedVar)) {
-        assert(STnode->sdti.type->u.function.args != NULL);
-        for (FieldList list = STnode->sdti.type->u.function.args->u.structure; 
-            list; list = list->tail) {
-            tableAddVar(list->name, list->type);
-        }
-        STnode->sdti.type->u.function.addedVar = 1;
-    }
 
+    SET1(PARSE(son1));
+    SET2(PARSE(son2));
 
-    PARSE(son1);
-    PARSE(son2);
-
-    varStackPop();
+    // TODO: create TABLE
+    return IRTreeNewSTMT_THEN(IRTson1, IRTson2, NULL);
 } 
 
  /* StmtList */
 SDTST2IRTDefHelper(StmtList_StmtStmtList) {
-    STnode->sdti.type = Fa->sdti.type;
 
     SON1
 
-    PARSE(son0);
-    PARSE(son1);
+    SET0(PARSE(son0));
+    SET1(PARSE(son1));
+
+    // IRTson1 may be NULL
+    return IRTreeNewSTMT_THEN(IRTson0, IRTson1, NULL);
 }
 
 SDTST2IRTDefHelper(StmtList_) {
-    STnode->sdti.type = Fa->sdti.type;
+    return NULL;
 }
 
  /* Stmt */
 SDTST2IRTDefHelper(Stmt_ExpSEMI) {
-    STnode->sdti.type = Fa->sdti.type;
 
     SON1
 
-    PARSE(son0);
+    SET0(PARSE(son0));
+    return IRTson0;
 }
 
 SDTST2IRTDefHelper(Stmt_CompSt) {
-    STnode->sdti.type = Fa->sdti.type;
 
     SON0
 
-    PARSE(son0);
+    SET0(PARSE(son0));
+
+    return IRTson0;
 }
 
 SDTST2IRTDefHelper(Stmt_RETURNExpSEMI) {
-    STnode->sdti.type = Fa->sdti.type;
 
     SON1
 
-    PARSE(son1);
+    SET1(PARSE(son1));
 
-    assert(STnode->sdti.type->kind == FUNCTION);
-    SemanticAssert(isSameType(STnode->sdti.type->u.function.ret, son1->sdti.type), SE_MISMATCHED_RETURN, STnode->first_line);
+    return IRTreeNewSTMT_RETURN(IRTson1);
 }
 
 SDTST2IRTDefHelper(Stmt_IFLPExpRPStmt) {
-    STnode->sdti.type = Fa->sdti.type;
 
     SON4
 
-    PARSE(son2);
-    PARSE(son4);
+    char *label1 = NewLabel();
+    char *label2 = NewLabel();
 
-    // assert(isSameType(son2->sdti.type, type_int)); // 假设2
+    SET_TF_LABEL(son2, label1, label2);
+    SET2(PARSE(son2));
+    SET4(PARSE(son4));
+
+    IRTson4->label_head = label1;
+    IRTson4->label_tail = label2;
+    
+    return IRTreeNewSTMT_THEN(IRTson2, IRTson4, NULL);
 }
 
 SDTST2IRTDefHelper(Stmt_IFLPExpRPStmtELSEStmt) {
-    STnode->sdti.type = Fa->sdti.type;
 
     SON6
 
-    PARSE(son2);
-    PARSE(son4);
-    PARSE(son6);
+    char *label1 = NewLabel();
+    char *label2 = NewLabel();
+    char *label3 = NewLabel();
 
-    // assert(isSameType(son2->sdti.type, type_int)); // 假设2
+    SET_TF_LABEL(son2, label1, label2);
+    SET2(PARSE(son2));
+    SET4(PARSE(son4));
+    SET6(PARSE(son6));
+
+    IRTson4->label_head = label1;
+    IRTson4->goto_label = label3;
+
+    IRTson6->label_head = label2;
+    IRTson6->label_tail = label3;
+    
+    return IRTreeNewSTMT_THEN(IRTson2, IRTson4, IRTson6);
 }
 
 SDTST2IRTDefHelper(Stmt_WHILELPExpRPStmt) {
-    STnode->sdti.type = Fa->sdti.type;
 
     SON4
+    
+    char *label1 = NewLabel();
+    char *label2 = NewLabel();
+    char *label3 = NewLabel();
 
-    PARSE(son2);
-    PARSE(son4);
+
+    SET_TF_LABEL(son2, label2, label3);
+    SET2(PARSE(son2));
+    SET4(PARSE(son4));
    
-    // assert(isSameType(son2->sdti.type, type_int)); // 假设2
+    IRTson2->label_head = label1;
+    IRTson2->label_tail = label2;
+
+    IRTson4->goto_label = label1;
+    IRTson4->label_tail = label3;
+
+    return IRTreeNewSTMT_THEN(IRTson2, IRTson4, NULL);
 }
 
  /* Local Definitions */
  /* DefList */
 SDTST2IRTDefHelper(DefList_DefDefList) {
-    STnode->sdti.type = Fa->sdti.type;
-    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
     SON1
 
-    PARSE(son0);
-    PARSE(son1);    
+    SET0(PARSE(son0));
+    SET1(PARSE(son1));
+
+    return IRTreeNewSTMT_THEN(IRTson0, IRTson1, NULL);
 }
 
 SDTST2IRTDefHelper(DefList_) {
-    STnode->sdti.type = Fa->sdti.type;
-    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
+    return NULL;
 }
 
  /* Def */
 SDTST2IRTDefHelper(Def_SpecifierDecListSEMI) {
-    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
     SON2
 
-    PARSE(son0);
-    STnode->sdti.type = son0->sdti.type;
-    PARSE(son1);
+    SET0(PARSE(son0));
+    SET1(PARSE(son1));
+
+    return IRTson1;
 }
 
  /* DecList */
 SDTST2IRTDefHelper(DecList_Dec) {
-    STnode->sdti.type = Fa->sdti.type;
-    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
     SON0
 
-    PARSE(son0);
+    SET0(PARSE(son0));
+
+    return IRTson0;   
 } 
 SDTST2IRTDefHelper(DecList_DecCOMMADecList) {
-    STnode->sdti.type = Fa->sdti.type;
-    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
     SON2
 
-    PARSE(son0);
-    PARSE(son2);
+    SET0(PARSE(son0));
+    SET2(PARSE(son2));
+
+    return IRTreeNewSTMT_THEN(IRTson0, IRTson2, NULL);
 }
 
  /* Dec */
 SDTST2IRTDefHelper(Dec_VarDec) {
-    STnode->sdti.type = Fa->sdti.type;
-    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
     SON0
 
     PARSE(son0);
 
-    if (STnode->sdti.defining_struct != NULL) {
-        SemanticAssert(FieldListFind(son0->sdti.name, STnode->sdti.defining_struct->u.structure) == NULL, SE_STRUCT_FIELD_DUPLICATE, STnode->first_line);
-        if (!hasErr) {
-            STnode->sdti.defining_struct->u.structure = FieldListNew(son0->sdti.name, son0->sdti.type, STnode->sdti.defining_struct->u.structure);
-        }
-    } else {
-        SemanticAssert(tableFindCurrVar(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
-        SemanticAssert(tableFindStruct(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
-
-        if (!hasErr) {
-            tableAddVar(son0->sdti.name, son0->sdti.type);
-        }
-    }
+    char *name = STnode->son->sdti.name;
+    
+    Operand op = tableFindVarOp(STnode, name);
+    assert(op);
+    if (op->type->kind == ARRAY || op->type->kind == STRUCTURE) 
+        return IRTreeNewEXP_DEC(IRTreeNewEXP_VAR(op), op->type->size);
+    else 
+        return NULL;
 }
 SDTST2IRTDefHelper(Dec_VarDecASSIGNOPExp) {
-    STnode->sdti.type = Fa->sdti.type;
-    STnode->sdti.defining_struct = Fa->sdti.defining_struct;
 
     SON2
 
-    PARSE(son0);
+    SET0(PARSE(son0));
+       
+    SET2(PARSE(son2));
 
-    if (STnode->sdti.defining_struct != NULL) {
-        SemanticAssert(FieldListFind(son0->sdti.name, STnode->sdti.defining_struct->u.structure) == NULL, SE_STRUCT_FIELD_DUPLICATE, STnode->first_line);
-        if (!hasErr) {
-            STnode->sdti.defining_struct->u.structure = FieldListNew(son0->sdti.name, son0->sdti.type, STnode->sdti.defining_struct->u.structure);
-        }
-        SemanticAssert(STnode->sdti.defining_struct == NULL, SE_STRUCT_FIELD_INITIALIZED, STnode->first_line);
-    } else {
-        SemanticAssert(tableFindCurrVar(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
-        SemanticAssert(tableFindStruct(son0->sdti.name) == NULL, SE_VARIABLE_DUPLICATE, STnode->first_line); 
+    char *name = STnode->son->sdti.name;
 
-        if (!hasErr) {
-            tableAddVar(son0->sdti.name, son0->sdti.type);
-        }
-    }
-        
-    PARSE(son2);
-    SemanticAssert(isSameType(son0->sdti.type, son2->sdti.type), 
-        SE_MISMATCHED_ASSIGNMENT, STnode->first_line);
+    return IRTreeNewEXP_ASSIGN(IRTreeNewEXP_VAR(tableFindVarOp(STnode, name)), IRTson2);
 }
  
+#define EXP_COND_SET_LABEL \
+    int is_exp_cond = 0;                      \
+    if (!STnode->sdti.true_label) {           \
+        char *label1 = NewLabel();            \
+        char *label2 = NewLabel();            \
+        SET_TF_LABEL(STnode, label1, label2); \
+        is_exp_cond = 1;                      \
+    }                                         
+
+#define EXP_COND_RETURN(IRTnode) \
+    if (is_exp_cond) {                                                                                \
+        char *label3 = NewLabel();                                                                    \
+        return IRTreeNewEXP_COND(IRTnode, STnode->sdti.true_label, STnode->sdti.false_label, label3); \
+    } else {                                                                                          \
+        return IRTnode;                                                                               \
+    }                                                                                                 
+
+#define COND_EXP_RETURN(IRTnode) \
+    if (STnode->sdti.true_label) {                                                                                               \
+        return IRTreeNewCOND_RELOP(IRTnode, IRTreeNewEXP_CONST(0), RELOP_NE, STnode->sdti.true_label, STnode->sdti.false_label); \
+    } else {                                                                                                                     \
+        return IRTnode;                                                                                                          \
+    }                                                                                                 
+
 
  /* Expressions */
  /* Exp */
 SDTST2IRTDefHelper(Exp_ExpASSIGNOPExp) {
     SON2
 
-    PARSE(son0);
-    PARSE(son2);
+    SET0(PARSE(son0));
+    SET2(PARSE(son2));
     
-    SemanticAssert(son0->sdti.islval == 1, SE_RVALUE_ASSIGNMENT, STnode->first_line);
-    SemanticAssert(son0->sdti.islval != 1 || isSameType(son0->sdti.type, son2->sdti.type), SE_MISMATCHED_ASSIGNMENT, STnode->first_line);
-
-    STnode->sdti.islval = 0;
-    STnode->sdti.type = son0->sdti.type;
+    IRTnode_t *IRTnode = IRTreeNewEXP_ASSIGN(IRTson0, IRTson2);
+    COND_EXP_RETURN(IRTnode);
 }
 
-SDTST2IRTDefHelper(Exp_ExpLOGICExp) {
+SDTST2IRTDefHelper(Exp_ExpRELOPExp) {
     SON2
 
-    PARSE(son0);
-    PARSE(son2);
+    EXP_COND_SET_LABEL;
 
-    STnode->sdti.type = son0->sdti.type;
+    assert(STnode->sdti.true_label);
+    SET0(PARSE(son0));
+    SET2(PARSE(son2));
 
-    assert(isSameType(son0->sdti.type, type_int)); // 假设2
-    assert(isSameType(son2->sdti.type, type_int)); // 假设2
+    IRTnode_t *IRTnode = IRTreeNewCOND_RELOP(IRTson0, IRTson2, STnode->son->next->ti.relop_val, STnode->sdti.true_label, STnode->sdti.false_label);
+    EXP_COND_RETURN(IRTnode);
 }
 
-SDTST2IRTDefHelper(Exp_ExpARITHMETICExp) {
+SDTST2IRTDefHelper(Exp_ExpANDExp) {
     SON2
 
-    PARSE(son0);
-    PARSE(son2);
+    EXP_COND_SET_LABEL;
 
-    SemanticAssert(isSameType(son0->sdti.type, son2->sdti.type), SE_MISMATCHED_OPERANDS, STnode->first_line);
-    SemanticAssert(son0->sdti.type->kind == BASIC, SE_MISMATCHED_OPERANDS, STnode->first_line);
-    SemanticAssert(son2->sdti.type->kind == BASIC, SE_MISMATCHED_OPERANDS, STnode->first_line);
+    char *label = NewLabel();
+    SET_TF_LABEL(son0, label, STnode->sdti.false_label);
+    SET0(PARSE(son0));
+    SET_TF_LABEL(son2, STnode->sdti.true_label, STnode->sdti.false_label);
+    SET2(PARSE(son2));
 
-    if (isSameType(son0->sdti.type, type_int) && isSameType(son0->sdti.type, type_int)) 
-        STnode->sdti.type = type_int;
-    else 
-        STnode->sdti.type = type_float;
+    IRTson2->label_head = label;
 
-    // assert(isSameType(son0->sdti.type, type_int) || isSameType(son2->sdti.type, type_float)); // 假设2
-    // assert(isSameType(son0->sdti.type, type_int) || isSameType(son2->sdti.type, type_float)); // 假设2
+    IRTnode_t *IRTnode = IRTreeNewSTMT_THEN(IRTson0, IRTson2, NULL);
+    EXP_COND_RETURN(IRTnode);
+}
+SDTST2IRTDefHelper(Exp_ExpORExp) {
+    SON2
+
+    EXP_COND_SET_LABEL;
+
+    char *label = NewLabel();
+    SET_TF_LABEL(son0, STnode->sdti.true_label, label);
+    SET0(PARSE(son0));
+    SET_TF_LABEL(son2, STnode->sdti.true_label, STnode->sdti.false_label);
+    SET2(PARSE(son2));
+
+    IRTson2->label_head = label;
+
+    IRTnode_t *IRTnode = IRTreeNewSTMT_THEN(IRTson0, IRTson2, NULL);
+    EXP_COND_RETURN(IRTnode);
+}
+
+SDTST2IRTDefHelper(Exp_ExpPLUSExp) {
+    SON2
+
+    SET0(PARSE(son0));
+    SET2(PARSE(son2));
+
+    IRTnode_t *IRTnode = IRTreeNewEXP_EXP_OP_EXP(OP_VARIABLE, EXP_ADD, IRTson0, IRTson2);
+    COND_EXP_RETURN(IRTnode);
+}
+SDTST2IRTDefHelper(Exp_ExpMINUSExp) {
+    SON2
+
+    SET0(PARSE(son0));
+    SET2(PARSE(son2));
+
+    IRTnode_t *IRTnode = IRTreeNewEXP_EXP_OP_EXP(OP_VARIABLE, EXP_SUB, IRTson0, IRTson2);
+    COND_EXP_RETURN(IRTnode);
+}
+SDTST2IRTDefHelper(Exp_ExpSTARExp) {
+    SON2
+
+    SET0(PARSE(son0));
+    SET2(PARSE(son2));
+
+    IRTnode_t *IRTnode = IRTreeNewEXP_EXP_OP_EXP(OP_VARIABLE, EXP_MUL, IRTson0, IRTson2);
+    COND_EXP_RETURN(IRTnode);
+}
+SDTST2IRTDefHelper(Exp_ExpDIVExp) {
+    SON2
+
+    SET0(PARSE(son0));
+    SET2(PARSE(son2));
+
+    IRTnode_t *IRTnode = IRTreeNewEXP_EXP_OP_EXP(OP_VARIABLE, EXP_DIV, IRTson0, IRTson2);
+    COND_EXP_RETURN(IRTnode);
 }
 
 SDTST2IRTDefHelper(Exp_LPExpRP) {
     SON2
 
-    PARSE(son1);
+    SET_TF_LABEL(son1, STnode->sdti.true_label, STnode->sdti.false_label);
+    SET1(PARSE(son1));
 
-    STnode->sdti.type = son1->sdti.type;
+    return IRTson1;
 }
 
 SDTST2IRTDefHelper(Exp_MINUSExp) {
     SON1
 
-    PARSE(son1);
+    SET1(PARSE(son1));
 
-    STnode->sdti.type = son1->sdti.type;
-
-    assert(isSameType(son1->sdti.type, type_int) || isSameType(son1->sdti.type, type_float)); // 假设2
+    IRTnode_t *IRTnode = IRTreeNewEXP_EXP_OP_EXP(OP_VARIABLE, EXP_SUB, IRTreeNewEXP_CONST(0), IRTson1);
+    COND_EXP_RETURN(IRTnode);
 }
 
 SDTST2IRTDefHelper(Exp_NOTExp) {
     SON1
 
-    PARSE(son1);
+    EXP_COND_SET_LABEL;
+    assert(STnode->sdti.true_label);
 
-    STnode->sdti.type = son1->sdti.type;
+    SET_TF_LABEL(son1, STnode->sdti.false_label, STnode->sdti.true_label);
+    SET1(PARSE(son1));
 
-    assert(isSameType(son1->sdti.type, type_int)); // 假设2
+    EXP_COND_RETURN(IRTson1);
 }
 
 SDTST2IRTDefHelper(Exp_IDLPArgsRP) {
@@ -581,101 +533,90 @@ SDTST2IRTDefHelper(Exp_IDLPArgsRP) {
     SON3
     VAL_NAME(0)
 
-    STnode->sdti.type = TypeNew(ARGS, STnode->first_line, STnode->first_line);
 
-    PARSE(son2);
+    SET2(PARSE(son2));
 
-    Type type = tableFindFunc(name);
-    Type var = tableFindVar(name);
-    SemanticAssert(var == NULL, SE_ACCESS_TO_NON_FUNCTION, STnode->first_line);
-    SemanticAssert(var != NULL || type != NULL, SE_FUNCTION_UNDEFINED, STnode->first_line);
-
-    if (hasErr) {
-        STnode->sdti.type = type_int;
-    } else {
-        STnode->sdti.type = type->u.function.ret;
+    if (strcmp(name, "write") == 0) {
+        // TODO: free IRTson2
+        IRTnode_t *IRTnode = IRTreeNewEXP_WRITE(IRTson2->son[0]);
+        COND_EXP_RETURN(IRTnode);
     }
-
-    SemanticAssert(type == NULL || isSameType(son2->sdti.type, type->u.function.args), SE_MISMATCHED_SIGNATURE, STnode->first_line);
+    else {   
+        IRTnode_t *IRTnode = IRTreeNewEXP_CALL(name, IRTson2);
+        COND_EXP_RETURN(IRTnode);
+    }
 }
 
 SDTST2IRTDefHelper(Exp_IDLPRP) {
     SON2
     VAL_NAME(0)
 
-    Type type = tableFindFunc(name);
-    Type var = tableFindVar(name);
-    SemanticAssert(var == NULL, SE_ACCESS_TO_NON_FUNCTION, STnode->first_line);
-    SemanticAssert(var != NULL || type != NULL, SE_FUNCTION_UNDEFINED, STnode->first_line);
-    if (type) {
-        SemanticAssert(isSameType(type_noneargs, type->u.function.args), SE_MISMATCHED_SIGNATURE, STnode->first_line);
-    }
-
-    if (hasErr) {
-        STnode->sdti.type = type_int;
+    if (strcmp(name, "read") == 0) {
+        IRTnode_t *IRTnode = IRTreeNewEXP_READ();
+        COND_EXP_RETURN(IRTnode);
     } else {
-        STnode->sdti.type = type->u.function.ret;
+        IRTnode_t *IRTnode = IRTreeNewEXP_CALL(name, NULL);
+        COND_EXP_RETURN(IRTnode);
     }
 }
 
 SDTST2IRTDefHelper(Exp_ExpLBExpRB) {
     SON3
 
-    PARSE(son0);
-    PARSE(son2);
+    son0->sdti.array_type = STnode->sdti.array_type->u.array.elem;
+    SET0(PARSE(son0));
+    SET2(PARSE(son2));
 
-    SemanticAssert(son0->sdti.type->kind == ARRAY, SE_ACCESS_TO_NON_ARRAY, STnode->first_line);
-    SemanticAssert(isSameType(son2->sdti.type, type_int), SE_NON_INTEGER_INDEX, STnode->first_line);
+    IRTnode_t *IRTnode;
 
-    // order: 
-    // int a[10][20]
-    // int -> elem 10 -> elem 20 -> array
-    STnode->sdti.type = son0->sdti.type->u.array.elem;
-    STnode->sdti.islval = 1;
+    assert(IRTson0->u.irt_exp.result->type->kind == ARRAY);
+    int size = STnode->sdti.array_type->u.array.elem->size;
+    IRTnode = IRTreeNewEXP_EXP_OP_EXP(OP_ADDRESS, EXP_MUL, IRTson2, IRTreeNewEXP_CONST(size));
+    IRTnode = IRTreeNewEXP_EXP_OP_EXP(OP_ADDRESS, EXP_ADD, IRTson0, IRTnode);
+
+    IRTnode->u.irt_exp.result->type = IRTson0->u.irt_exp.result->type->u.array.elem;
+    if (IRTnode->u.irt_exp.result->type == type_int) {
+        IRTnode = IRTreeNewEXP_DRA(IRTnode);
+    }
+
+    COND_EXP_RETURN(IRTnode);
 }
 
 SDTST2IRTDefHelper(Exp_ExpDOTID) {
     SON2
-
-    PARSE(son0);
+    SET0(PARSE(son0));
 
     VAL_NAME(2)
 
-    SemanticAssert(son0->sdti.type->kind == STRUCTURE, SE_ACCESS_TO_NON_STRUCT, STnode->first_line);
-
-    if (son0->sdti.type->kind == STRUCTURE) {
-        Type type = FieldListFind(name, son0->sdti.type->u.structure);
-        SemanticAssert(type != NULL, SE_STRUCT_FIELD_UNDEFINED, STnode->first_line);
-        if (type != NULL)
-            STnode->sdti.type = type;
-        else    
-            STnode->sdti.type = type_int; // use int
+    IRTnode_t *IRTnode;
+    FieldList fl = FieldListFind(name, IRTson0->u.irt_exp.result->type->u.structure);
+    assert(fl);
+    Type type  = fl->type;
+    int offset = fl->offset;
+    // TODO: search for existing constant, so can index with op
+    IRTnode = IRTreeNewEXP_EXP_OP_EXP(OP_ADDRESS, EXP_ADD, IRTson0, IRTreeNewEXP_CONST(offset));
+    IRTnode->u.irt_exp.result->type = type;
+    // IRTnode = IRTreeNewEXP_OP_EXP(type2opkind(type), EXP_DRA, IRTnode); 
+    if (IRTnode->u.irt_exp.result->type == type_int) {
+        IRTnode = IRTreeNewEXP_DRA(IRTnode);
     }
-    else 
-        STnode->sdti.type = type_int; // use int
-    STnode->sdti.islval = 1;
+
+    COND_EXP_RETURN(IRTnode);
 }
 
 SDTST2IRTDefHelper(Exp_ID) {
-    IRnode(EXP)
     SON0
 
     VAL_NAME(0)
-
-    IRTnode->u.irt_exp.kind = VAL;
-    IRTnode->u.irt_exp.result = NewOperand(VARIABLE, name, 0);
-
-    return IRTnode;
+    IRTnode_t *IRTnode = IRTreeNewEXP_VAR(tableFindVarOp(STnode, name));
+    COND_EXP_RETURN(IRTnode);
 }
 
 SDTST2IRTDefHelper(Exp_INT) {
-    IRnode(EXP)
     SON0
 
-    IRTnode->u.irt_exp.kind = VAL;
-    IRTnode->u.irt_exp.result = NewOperand(CONSTANT, NULL, son0->ti.int_val);
-
-    return IRTnode;
+    IRTnode_t *IRTnode = IRTreeNewEXP_CONST(son0->ti.int_val);
+    COND_EXP_RETURN(IRTnode);
 }
 
 SDTST2IRTDefHelper(Exp_FLOAT) {
@@ -685,34 +626,19 @@ SDTST2IRTDefHelper(Exp_FLOAT) {
 
  /* Args */
 SDTST2IRTDefHelper(Args_ExpCOMMAArgs) {
-    STnode->sdti.type = Fa->sdti.type;
-
     SON2
 
-    PARSE(son0);
-    PARSE(son2);
+    SET0(PARSE(son0));
+    SET2(PARSE(son2));
 
-    assert(STnode->sdti.type->kind == ARGS);
-    if (STnode->sdti.type->kind == ARGS) {
-        // order: 
-        // int a, float b
-        // int a -> tail float b -> struct
-        STnode->sdti.type->u.structure = FieldListNew(NULL, son0->sdti.type, STnode->sdti.type->u.structure); // add to head
-    }
+    return IRTreeNewEXP_ARG(IRTson0, IRTson2);
 }
 
 SDTST2IRTDefHelper(Args_Exp) {
-    STnode->sdti.type = Fa->sdti.type;
 
     SON0
 
-    PARSE(son0);
+    SET0(PARSE(son0));
 
-    assert(STnode->sdti.type->kind == ARGS);
-    if (STnode->sdti.type->kind == ARGS) {
-        // order: 
-        // int a, float b
-        // int a -> tail float b -> struct
-        STnode->sdti.type->u.structure = FieldListNew(NULL, son0->sdti.type, STnode->sdti.type->u.structure); // add to head
-    }
+    return IRTreeNewEXP_ARG(IRTson0, NULL);
 }

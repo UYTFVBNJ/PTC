@@ -9,7 +9,7 @@
 
 
 // SDT function helper
-#define SON0 int hasErr = 0; void varStackSet(STnode); STnode_t *son0 = (STnode->son);
+#define SON0 int hasErr = 0; varStackSet(STnode); STnode_t *son0 = (STnode->son);
 #define SON1 SON0 STnode_t *son1 = (STnode->son->next);
 #define SON2 SON1 STnode_t *son2 = (STnode->son->next->next);
 #define SON3 SON2 STnode_t *son3 = (STnode->son->next->next->next);
@@ -22,6 +22,7 @@
 #define VAL_NAME(x) char *name = son ## x->ti.id_val;
 
 extern Type type_int, type_float, type_noneargs;
+extern int sdt_is_param;
 
 void STtraversal(STnode_t *u);
 void prtname(STnode_t *STnode);
@@ -43,7 +44,7 @@ SemanticError_t semantic_errors[MAX_SEMANTIC_ERRORS];
 void SDT_report() {
     int hasErr = 0;
     for (SkipListNode_t *func = tableGetFuncList()->next; func; func = func->next) {
-        SemanticAssert(func->type->deflineno != -1, SE_FUNCTION_DECLARED_NOT_DEFINED, func->type->declineno);
+        SemanticAssert(((Type)func->val)->deflineno != -1, SE_FUNCTION_DECLARED_NOT_DEFINED, ((Type)(func->val))->declineno);
     }
     for (int i = 0; i < semantic_errors_size; i ++) {
         printf("Error type %d at Line %d: %s.\n", semantic_errors[i].seno, semantic_errors[i].lineno, semantic_errors[i].message);
@@ -332,8 +333,10 @@ SDTDefHelper(ParamDec_SpecifierVarDec) {
  /* CompSt */
 SDTDefHelper(CompSt_LCDefListStmtListRC) {
     STnode->sdti.type = Fa->sdti.type;
-    SON3
     varStackPush();
+    SON3
+
+    sdt_is_param = 1;
     if (!(STnode->sdti.type->u.function.addedVar)) {
         assert(STnode->sdti.type->u.function.args != NULL);
         for (FieldList list = STnode->sdti.type->u.function.args->u.structure; 
@@ -342,7 +345,7 @@ SDTDefHelper(CompSt_LCDefListStmtListRC) {
         }
         STnode->sdti.type->u.function.addedVar = 1;
     }
-
+    sdt_is_param = 0;
 
     PARSE(son1);
     PARSE(son2);
@@ -653,6 +656,7 @@ SDTDefHelper(Exp_ExpLBExpRB) {
     // int a[10][20]
     // int -> elem 10 -> elem 20 -> array
     STnode->sdti.type = son0->sdti.type->u.array.elem;
+    STnode->sdti.array_type = son0->sdti.array_type;
     STnode->sdti.islval = 1;
 }
 
@@ -671,6 +675,9 @@ SDTDefHelper(Exp_ExpDOTID) {
         if (fl != NULL) {
             Type type = fl->type;
             STnode->sdti.type = type;
+            if (type->kind == ARRAY) {
+                STnode->sdti.array_type = type;
+            }
         } else {
             STnode->sdti.type = type_int; // use int
         }
@@ -689,9 +696,12 @@ SDTDefHelper(Exp_ID) {
     SemanticAssert(type != NULL, SE_VARIABLE_UNDEFINED, STnode->first_line);
 
     STnode->sdti.islval = 1;
-    if (type != NULL)
+    if (type != NULL) {
         STnode->sdti.type = type;
-    else 
+        if (type->kind == ARRAY) {
+            STnode->sdti.array_type = type;
+        }
+    } else 
         STnode->sdti.type = type_int; // use int
 }
 

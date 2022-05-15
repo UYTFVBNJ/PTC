@@ -3,6 +3,7 @@
     #include "common.h"
     #include "syntax.tab.h"
     #include "STree.h"
+    #include "Token.h"
     int lexical_error = 0;    
     YYSTYPE yylval;
     int yycolumn = 1;
@@ -45,8 +46,26 @@ ws [[:blank:]]
 
 %%
  /* RELOP */
->|<|>=|<=|==|!= { 
-NOMAL_ACTION(RELOP,)
+ /* >|<|>=|<=|==|!= { */
+ /* NOMAL_ACTION(TYPE, Cur_STnode->ti.relop_val = RELOP_) */
+ /* } */
+">" { 
+NOMAL_ACTION(RELOP, Cur_STnode->ti.relop_val = RELOP_GT)
+}
+"<" { 
+NOMAL_ACTION(RELOP, Cur_STnode->ti.relop_val = RELOP_LT)
+}
+">=" { 
+NOMAL_ACTION(RELOP, Cur_STnode->ti.relop_val = RELOP_GE)
+}
+"<=" { 
+NOMAL_ACTION(RELOP, Cur_STnode->ti.relop_val = RELOP_LE)
+}
+"==" { 
+NOMAL_ACTION(RELOP, Cur_STnode->ti.relop_val = RELOP_EQ)
+}
+"!=" { 
+NOMAL_ACTION(RELOP, Cur_STnode->ti.relop_val = RELOP_NE)
 }
 
  /* AND */

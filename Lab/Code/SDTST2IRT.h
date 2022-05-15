@@ -2,129 +2,119 @@
 #define SDTST2IRT_H
 
 #include "Type.h"
+#include "STree.h"
+#include "IRTree.h"
 
-typedef struct SDTIR_info_t {
-    IRTNode_t *IRTnode;
-} SDTIR_info_t;
+typedef struct SDTST2IRT_info_t {
+    IRTnode_t *IRTnode;
+} SDTST2IRT_info_t;
 
-struct Operand_ {
-    enum { VARIABLE, CONSTANT, ADDRESS } kind;
-    union {
-        int var_no;
-        int value;
-    } u;
-};
-
-typedef struct Operand_* Operand;
-struct InterCode {
-    enum { ASSIGN, ADD, SUB, MUL, DIV } kind;
-    union {
-        struct { Operand right, left; } assign;
-        struct { Operand result, op1, op2; } binop;
-    } u;
-};
-
-#define SDTIRDefHelper(body) IRTnode_t* SDT##body (STnode_t *STnode, STnode_t *Fa)
+#define SDTST2IRTDefHelper(body) IRTnode_t* SDTST2IRT##body (STnode_t *STnode, STnode_t *Fa)
 
  /* High-level Definitions */
  /* Program */
-SDTIRDefHelper(Program_ExtDefList);
+SDTST2IRTDefHelper(Program_ExtDefList);
 
  /* ExtDefList */
-SDTIRDefHelper(ExtDefList_ExtDefExtDefList);
-SDTIRDefHelper(ExtDefList_);
+SDTST2IRTDefHelper(ExtDefList_ExtDefExtDefList);
+SDTST2IRTDefHelper(ExtDefList_);
 
  /* ExtDef */
-SDTIRDefHelper(ExtDef_SpecifierExtDecListSEMI);
-SDTIRDefHelper(ExtDef_SpecifierSEMI);
-SDTIRDefHelper(ExtDef_SpecifierFunDecCompSt);
-SDTIRDefHelper(ExtDef_SpecifierFunDecSEMI);
+SDTST2IRTDefHelper(ExtDef_SpecifierExtDecListSEMI);
+SDTST2IRTDefHelper(ExtDef_SpecifierSEMI);
+SDTST2IRTDefHelper(ExtDef_SpecifierFunDecCompSt);
+SDTST2IRTDefHelper(ExtDef_SpecifierFunDecSEMI);
 
  /* ExtDecList */
-SDTIRDefHelper(ExtDecList_VarDec);
-SDTIRDefHelper(ExtDecList_VarDecCOMMAExtDecList);
+SDTST2IRTDefHelper(ExtDecList_VarDec);
+SDTST2IRTDefHelper(ExtDecList_VarDecCOMMAExtDecList);
 
 
  /* Specifiers */
  /* Specifier */
-SDTIRDefHelper(Specifier_TYPE);
-SDTIRDefHelper(Specifier_StructSpecifier);
+SDTST2IRTDefHelper(Specifier_TYPE);
+SDTST2IRTDefHelper(Specifier_StructSpecifier);
 
  /* StructSpecifier */
-SDTIRDefHelper(StructSpecifier_STRUCTOptTagLCDefListRC);
-SDTIRDefHelper(StructSpecifier_STRUCTTag);
+SDTST2IRTDefHelper(StructSpecifier_STRUCTOptTagLCDefListRC);
+SDTST2IRTDefHelper(StructSpecifier_STRUCTTag);
  /* OptTag */
-SDTIRDefHelper(OptTag_ID);
-SDTIRDefHelper(OptTag_);
+SDTST2IRTDefHelper(OptTag_ID);
+SDTST2IRTDefHelper(OptTag_);
 
  /* Tag */
-SDTIRDefHelper(Tag_ID);
+SDTST2IRTDefHelper(Tag_ID);
 
  /* Declarators */
  /* VarDec */
-SDTIRDefHelper(VarDec_ID);
-SDTIRDefHelper(VarDec_VarDecLBINTRB);
+SDTST2IRTDefHelper(VarDec_ID);
+SDTST2IRTDefHelper(VarDec_VarDecLBINTRB);
 
  /* FunDec */
-SDTIRDefHelper(FunDec_IDLPVarListRP);
-SDTIRDefHelper(FunDec_IDLPRP);
+SDTST2IRTDefHelper(FunDec_IDLPVarListRP);
+SDTST2IRTDefHelper(FunDec_IDLPRP);
 
  /* VarList */
-SDTIRDefHelper(VarList_ParamDecCOMMAVarList);
-SDTIRDefHelper(VarList_ParamDec);
+SDTST2IRTDefHelper(VarList_ParamDecCOMMAVarList);
+SDTST2IRTDefHelper(VarList_ParamDec);
 
  /* ParamDec */
-SDTIRDefHelper(ParamDec_SpecifierVarDec);
+SDTST2IRTDefHelper(ParamDec_SpecifierVarDec);
 
  /* Statements */
  /* CompSt */
-SDTIRDefHelper(CompSt_LCDefListStmtListRC);
+SDTST2IRTDefHelper(CompSt_LCDefListStmtListRC);
 
  /* StmtList */
-SDTIRDefHelper(StmtList_StmtStmtList);
-SDTIRDefHelper(StmtList_);
+SDTST2IRTDefHelper(StmtList_StmtStmtList);
+SDTST2IRTDefHelper(StmtList_);
 
  /* Stmt */
-SDTIRDefHelper(Stmt_ExpSEMI);
-SDTIRDefHelper(Stmt_CompSt);
-SDTIRDefHelper(Stmt_RETURNExpSEMI);
-SDTIRDefHelper(Stmt_IFLPExpRPStmt);
-SDTIRDefHelper(Stmt_IFLPExpRPStmtELSEStmt);
-SDTIRDefHelper(Stmt_WHILELPExpRPStmt);
+SDTST2IRTDefHelper(Stmt_ExpSEMI);
+SDTST2IRTDefHelper(Stmt_CompSt);
+SDTST2IRTDefHelper(Stmt_RETURNExpSEMI);
+SDTST2IRTDefHelper(Stmt_IFLPExpRPStmt);
+SDTST2IRTDefHelper(Stmt_IFLPExpRPStmtELSEStmt);
+SDTST2IRTDefHelper(Stmt_WHILELPExpRPStmt);
 
  /* Local Definitions */
  /* DefList */
-SDTIRDefHelper(DefList_DefDefList);
-SDTIRDefHelper(DefList_);
+SDTST2IRTDefHelper(DefList_DefDefList);
+SDTST2IRTDefHelper(DefList_);
 
  /* Def */
-SDTIRDefHelper(Def_SpecifierDecListSEMI);
+SDTST2IRTDefHelper(Def_SpecifierDecListSEMI);
 
  /* DecList */
-SDTIRDefHelper(DecList_Dec);
-SDTIRDefHelper(DecList_DecCOMMADecList);
+SDTST2IRTDefHelper(DecList_Dec);
+SDTST2IRTDefHelper(DecList_DecCOMMADecList);
 
  /* Dec */
-SDTIRDefHelper(Dec_VarDec);
-SDTIRDefHelper(Dec_VarDecASSIGNOPExp);
+SDTST2IRTDefHelper(Dec_VarDec);
+SDTST2IRTDefHelper(Dec_VarDecASSIGNOPExp);
  
  /* Expressions */
  /* Exp */
-SDTIRDefHelper(Exp_ExpASSIGNOPExp);
-SDTIRDefHelper(Exp_ExpLOGICExp);
-SDTIRDefHelper(Exp_ExpARITHMETICExp);
-SDTIRDefHelper(Exp_LPExpRP);
-SDTIRDefHelper(Exp_MINUSExp);
-SDTIRDefHelper(Exp_NOTExp);
-SDTIRDefHelper(Exp_IDLPArgsRP);
-SDTIRDefHelper(Exp_IDLPRP);
-SDTIRDefHelper(Exp_ExpLBExpRB);
-SDTIRDefHelper(Exp_ExpDOTID);
-SDTIRDefHelper(Exp_ID);
-SDTIRDefHelper(Exp_INT);
-SDTIRDefHelper(Exp_FLOAT);
+SDTST2IRTDefHelper(Exp_ExpASSIGNOPExp);
+SDTST2IRTDefHelper(Exp_ExpRELOPExp);
+SDTST2IRTDefHelper(Exp_ExpANDExp);
+SDTST2IRTDefHelper(Exp_ExpORExp);
+SDTST2IRTDefHelper(Exp_ExpPLUSExp);
+SDTST2IRTDefHelper(Exp_ExpMINUSExp);
+SDTST2IRTDefHelper(Exp_ExpSTARExp);
+SDTST2IRTDefHelper(Exp_ExpDIVExp);
+SDTST2IRTDefHelper(Exp_LPExpRP);
+SDTST2IRTDefHelper(Exp_MINUSExp);
+SDTST2IRTDefHelper(Exp_NOTExp);
+SDTST2IRTDefHelper(Exp_IDLPArgsRP);
+SDTST2IRTDefHelper(Exp_IDLPRP);
+SDTST2IRTDefHelper(Exp_ExpLBExpRB);
+SDTST2IRTDefHelper(Exp_ExpDOTID);
+SDTST2IRTDefHelper(Exp_ID);
+SDTST2IRTDefHelper(Exp_INT);
+SDTST2IRTDefHelper(Exp_FLOAT);
  
  /* Args */
-SDTIRDefHelper(Args_ExpCOMMAArgs);
-SDTIRDefHelper(Args_Exp);
+SDTST2IRTDefHelper(Args_ExpCOMMAArgs);
+SDTST2IRTDefHelper(Args_Exp);
 #endif

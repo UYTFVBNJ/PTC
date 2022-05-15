@@ -1,0 +1,9 @@
+int main() {
+    int N = 30;
+    int k = 1;
+    while (k <= N) {
+        k = k + 1;
+	write(k);
+    }
+    return 0;
+}

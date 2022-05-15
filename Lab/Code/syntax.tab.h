@@ -82,7 +82,8 @@ extern int yydebug;
     INT = 283,                     /* INT  */
     FLOAT = 284,                   /* FLOAT  */
     ID = 285,                      /* ID  */
-    LOWER_THAN_ELSE = 286          /* LOWER_THAN_ELSE  */
+    NEG = 286,                     /* NEG  */
+    LOWER_THAN_ELSE = 287          /* LOWER_THAN_ELSE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif

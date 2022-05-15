@@ -1,5 +1,6 @@
 #include "SkipList.h"
 #include "STree.h"
+#include "IRTree.h"
 #include "Type.h"
 #ifndef SYMBOLTABLES_H
 #define SYMBOLTABLES_H
@@ -8,13 +9,6 @@ typedef struct SkipListStack_t {
     SkipList_t table;
     struct SkipListStack_t *prev;
 } SkipListStack_t;
-
-typedef int* Operand;
-
-typedef struct Var_info_t {
-    Type type;
-    Operand op;
-} Var_info_t;
 
 void initSymbolTables();
 
@@ -29,7 +23,7 @@ void tableAddVar(char *name, Type type);
 Type tableFindVar(char *name);
 Type tableFindCurrVar(char *name);
 
-Operand tableFindVarOp(char *name);
+Operand tableFindVarOp(STnode_t *STnode, char *name);
 
 void varStackPush();
 void varStackPop();

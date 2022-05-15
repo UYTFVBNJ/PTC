@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "symboltables.h": "c",
+        "irtree.h": "c",
+        "stree.h": "c",
+        "semanticerrors.h": "c"
+    }
+}

@@ -7,10 +7,14 @@ STnode_t *STreeNewNode() {
     STnode->sdti.name = NULL;
     STnode->sdti.defining_struct = NULL;
     STnode->sdti.type = NULL;
+    STnode->sdti.array_type = NULL;
+    STnode->sdti.VarTableStack = NULL;
     STnode->sdti.islval = 0;
+    STnode->sdti.true_label  = NULL;
+    STnode->sdti.false_label = NULL;
     
     STnode->SDT_handler = NULL;
-    STnode->SDTIR_handler = NULL;
+    STnode->SDTST2IRT_handler = NULL;
 
     STnode->son = NULL;
     STnode->next = NULL;

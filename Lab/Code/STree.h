@@ -8,7 +8,7 @@ typedef struct STnode_t {
     token_info_t ti;
     SDT_info_t sdti;
     void (*SDT_handler)(struct STnode_t *STnode, struct STnode_t *Fa);
-    void (*SDTIR_handler)(struct STnode_t *STnode, struct STnode_t *Fa);
+    struct IRTnode_t *(*SDTST2IRT_handler)(struct STnode_t *STnode, struct STnode_t *Fa);
 
     struct STnode_t *son, *next;
     int symbol, first_line;
