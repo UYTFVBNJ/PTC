@@ -405,6 +405,12 @@ SDTST2IRTDefHelper(Dec_VarDecASSIGNOPExp) {
 
  /* Expressions */
  /* Exp */
+
+#define DRA(IRTnode) \
+    if (IRTnode->u.irt_exp.result->kind == OP_ADDRESS) { \
+        IRTnode = IRTreeNewEXP_DRA(IRTnode);             \
+    }                                                    \
+
 SDTST2IRTDefHelper(Exp_ExpASSIGNOPExp) {
     SON2
 

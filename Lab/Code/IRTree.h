@@ -10,6 +10,7 @@ struct Operand_ {
     enum { OP_VARIABLE, OP_CONSTANT, OP_ADDRESS } kind;
     char name[OPERAND_NAME_SIZE_MAX];
     Type type;
+    int offset;
 };
 
 typedef struct Operand_* Operand;
@@ -24,7 +25,7 @@ typedef struct IRT_COND_t {
 
 // EXP_NODE
 typedef struct IRT_EXP_t {
-    enum { EXP_VTOV, EXP_VTOA, EXP_DRA, EXP_REA, EXP_ADD, EXP_SUB, EXP_MUL, EXP_DIV, EXP_VAL, EXP_CALL, EXP_ARG, EXP_PARAM, EXP_READ, EXP_WRITE, EXP_DEC, EXP_COND } kind;
+    enum { EXP_VTOV, EXP_DRA, EXP_ADD, EXP_SUB, EXP_MUL, EXP_DIV, EXP_VAL, EXP_CALL, EXP_ARG, EXP_PARAM, EXP_READ, EXP_WRITE, EXP_DEC, EXP_COND } kind;
     // VTOV x := y  val to val biop
     // VTOA x := &y cast val to addr
     // DRA  x := *y dereference addr
@@ -46,6 +47,7 @@ typedef struct IRT_STMT_t {
 typedef struct IRT_FUNC_t {
     char *name;
     Type type;
+    int func_offset;
 } IRT_FUNC_t;  
 
 
@@ -99,5 +101,7 @@ IRTnode_t *IRTreeNewFUNC(char *name, Type type, IRTnode_t *IRTN0, IRTnode_t *IRT
 IRTnode_t *IRTreeNewFUNC_THEN(IRTnode_t *IRTN0, IRTnode_t *IRTN1);
 
 void IRTreeTranslate(IRTnode_t *IRTnode);
+void IRTreeCalOffset(IRTnode_t *IRTnode);
+void IRTreeRewrite(IRTnode_t *IRTnode);
 
 #endif

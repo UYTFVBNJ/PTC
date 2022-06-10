@@ -2169,7 +2169,13 @@ void SDTparse() {
 void SDTST2IRTparse() {
     /* puts("SDTST2IRTparse"); */
     IRTnode_t *IRTroot = root->SDTST2IRT_handler(root, NULL);
-    IRTreeTranslate(IRTroot);
+    /* IRTreeTranslate(IRTroot); */
+    IRTreeCalOffset(IRTroot);
+
+    printf(".data\n");
+    printf("_ret: .asciiz \"\\n\"\n");
+    printf(".text\n");
+    IRTreeRewrite(IRTroot);
 }
 
 void prtname(STnode_t *STnode) {

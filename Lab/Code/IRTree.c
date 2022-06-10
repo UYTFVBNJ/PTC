@@ -1,3 +1,4 @@
+#include "Reg.h"
 #include "STree.h"
 #include "IRTree.h"
 #include "Type.h"
@@ -39,6 +40,7 @@ IRTnode_t *IRTreeNewNode(int kind) {
         case IRT_FUNC:
             IRTnode->u.irt_func.name = NULL;
             IRTnode->u.irt_func.type = NULL;
+            IRTnode->u.irt_func.func_offset = -1;
             break;
         default:
           assert(0);  
@@ -88,6 +90,7 @@ Operand NewOperand(int kind, int is_var, int const_value, Type type) {
     
     operand->kind = kind;
     operand->type = type;
+    operand->offset = -1;
 
     if (kind == OP_CONSTANT) {
         assert(snprintf(operand->name, OPERAND_NAME_SIZE_MAX, "#%d", const_value) < OPERAND_NAME_SIZE_MAX);
@@ -317,21 +320,14 @@ IRTnode_t *IRTreeNewFUNC_THEN(IRTnode_t *IRTN0, IRTnode_t *IRTN1) {
 void IRTreeTranslateEXP(IRTnode_t *IRTnode) {
     if (IRTnode->u.irt_exp.kind == EXP_VAL) 
         return ;
+    
     switch (IRTnode->u.irt_exp.kind) {
         case EXP_VTOV:
             printf("%s := %s\n", IRTnode->son[0]->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name);
             break;
-        case EXP_VTOA:
-            assert(IRTnode->son[1] == NULL);
-            printf("%s := &%s\n", IRTnode->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name);
-            break;
         case EXP_DRA:
             // assert(IRTnode->son[1] == NULL);
             // printf("%s := *%s\n", IRTnode->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name);
-            break;
-        case EXP_REA:
-            printf("*%s := %s\n", IRTnode->son[0]->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name);
-            printf("%s := %s\n",  IRTnode->u.irt_exp.result->name,         IRTnode->son[1]->u.irt_exp.result->name);
             break;
         case EXP_ADD:
             printf("%s := %s + %s\n", IRTnode->u.irt_exp.result->name, IRTnode->son[0]->u.irt_exp.result->name, IRTnode->son[1]->u.irt_exp.result->name);
@@ -480,3 +476,256 @@ void IRTreeTranslate(IRTnode_t *IRTnode) {
     if (IRTnode->label_tail)
         printf("LABEL %s :\n", IRTnode->label_tail);
 }
+
+static int offset;
+static int arg_offset;
+static int func_offset;
+void IRTreeCalOffset(IRTnode_t *IRTnode) {
+    // printf("CalOffset\n");
+    if (IRTnode == NULL) {
+        return ;
+    }
+    
+    // printf("IRTreeTranslate %p\n", IRTnode);
+    // printf("IRTreeTranslate %d\n", IRTnode->kind);
+
+    if (IRTnode->kind == IRT_FUNC) {
+        func_offset = 0;
+        offset = 4;
+    }
+
+    for (int i = 0; i < 4; i++) if (IRTnode->son[i] != NULL)
+        IRTreeCalOffset(IRTnode->son[i]);
+
+    switch (IRTnode->kind) {
+        case IRT_EXP:
+            if (IRTnode->u.irt_exp.kind == EXP_DEC) {
+                IRTnode->son[0]->u.irt_exp.result->offset = offset;
+                offset += IRTnode->u.irt_exp.dec_size + 4;
+            } else if (IRTnode->u.irt_exp.result->offset == -1) {
+                switch (IRTnode->u.irt_exp.result->name[0]) {
+                case '#':
+                    break;
+                case '*':
+                    IRTnode->u.irt_exp.result->offset = IRTnode->son[0]->u.irt_exp.result->offset;
+                    // printf("%s %d\n", IRTnode->u.irt_exp.result->name, IRTnode->u.irt_exp.result->offset);
+                    break;
+                default:
+                    IRTnode->u.irt_exp.result->offset = offset;
+                    // printf("%s %d\n", IRTnode->u.irt_exp.result->name, IRTnode->u.irt_exp.result->offset);
+                    offset += 4;
+                    break;
+                }
+            }
+            break;
+        case IRT_STMT:
+            break;
+        case IRT_COND:
+            break;
+        case IRT_FUNC:
+            IRTnode->u.irt_func.func_offset = offset;
+            break;
+        default:
+            assert(0);
+    }
+}
+
+void IRTreeRewriteEXP(IRTnode_t *IRTnode) {
+    if (IRTnode->u.irt_exp.kind == EXP_VAL) 
+        return ;
+    
+    // printf("RewriteEXP %d\n", IRTnode->u.irt_exp.kind);
+    switch (IRTnode->u.irt_exp.kind) {
+        case EXP_VTOV:
+            LReg(IRTnode->son[1]->u.irt_exp.result, 1);
+            printf("  move $t0, $t1\n");
+            SReg(IRTnode->son[0]->u.irt_exp.result, 0);
+            break;
+        case EXP_DRA:
+            break;
+        case EXP_ADD:
+            LReg(IRTnode->son[0]->u.irt_exp.result, 1);
+            LReg(IRTnode->son[1]->u.irt_exp.result, 2);
+            printf("  add $t0, $t1, $t2\n");
+            SReg(IRTnode->u.irt_exp.result, 0);
+            break;
+        case EXP_SUB:
+            LReg(IRTnode->son[0]->u.irt_exp.result, 1);
+            LReg(IRTnode->son[1]->u.irt_exp.result, 2);
+            printf("  sub $t0, $t1, $t2\n");
+            SReg(IRTnode->u.irt_exp.result, 0);
+            break;
+        case EXP_MUL:
+            LReg(IRTnode->son[0]->u.irt_exp.result, 1);
+            LReg(IRTnode->son[1]->u.irt_exp.result, 2);
+            printf("  mulo $t0, $t1, $t2\n");
+            SReg(IRTnode->u.irt_exp.result, 0);
+            break;
+        case EXP_DIV:
+            LReg(IRTnode->son[0]->u.irt_exp.result, 1);
+            LReg(IRTnode->son[1]->u.irt_exp.result, 2);
+            printf("  div $t0, $t1, $t2\n");
+            SReg(IRTnode->u.irt_exp.result, 0);
+            break;
+        case EXP_CALL:
+            arg_offset = 0;
+            printf("  sub $sp, $sp, %d\n", func_offset);
+            if (strcmp(IRTnode->u.irt_exp.func_name, "main") == 0) {
+                printf("  jal %s\n", IRTnode->u.irt_exp.func_name);
+            } else {
+                printf("  jal func_%s\n", IRTnode->u.irt_exp.func_name);
+            }
+            printf("  add $sp, $sp, %d\n", func_offset);
+            printf("  move $t0, $v0\n");
+            SReg(IRTnode->u.irt_exp.result, 0);
+            break;
+        case EXP_ARG:
+            // if (IRTnode->u.irt_exp.result->kind == OP_ADDRESS) 
+                // printf("ARG %s\n", IRTnode->u.irt_exp.result->name + 1);
+            // else    
+            LReg(IRTnode->u.irt_exp.result, 1);
+            printf("  sw $t1, %d($sp)\n", -(func_offset + 4 + arg_offset));
+            arg_offset += 4;
+            break;
+        case EXP_PARAM:
+            break;
+        case EXP_READ:
+            printf("  li $v0, 5\n");
+            printf("  syscall\n");
+            
+            printf("  move $t0, $v0\n");
+            SReg(IRTnode->u.irt_exp.result, 0);
+            break;
+        case EXP_WRITE:
+            LReg(IRTnode->son[0]->u.irt_exp.result, 1);
+            printf("  li $v0, 1\n");
+            printf("  move $a0, $t1\n");
+            printf("  syscall\n");
+            
+            printf("  li $v0, 4\n");
+            printf("  la $a0, _ret\n");
+            printf("  syscall\n");
+            
+            printf("  li $t0, 0\n");
+            SReg(IRTnode->u.irt_exp.result, 0);
+            break;
+        case EXP_DEC:
+            printf("  sub $t0, $sp, %d\n", IRTnode->son[0]->u.irt_exp.result->offset + IRTnode->u.irt_exp.dec_size);
+            SReg(IRTnode->son[0]->u.irt_exp.result, 0);
+            break;
+        case EXP_COND:
+            printf("%s:\n", IRTnode->u.irt_exp.T);
+            printf("  li $t0, 1\n");
+            SReg(IRTnode->u.irt_exp.result, 0);
+            printf("  b %s\n", IRTnode->u.irt_exp.END);
+            printf("%s:\n", IRTnode->u.irt_exp.F);
+            printf("  li $t0, 0\n");
+            SReg(IRTnode->u.irt_exp.result, 0);
+            printf("%s:\n", IRTnode->u.irt_exp.END);
+            break;
+        default:
+            assert(0);
+    }
+ }
+ 
+void IRTreeRewriteSTMT(IRTnode_t *IRTnode) {
+    if (IRTnode->u.irt_stmt.kind == STMT_RETURN) {
+        LReg(IRTnode->son[0]->u.irt_exp.result, 1);
+        printf("  move $v0, $t1\n");
+        printf("  lw $ra, 0($sp)\n");
+        printf("  jr $ra\n");
+    }
+}
+
+void IRTreeRewriteCOND(IRTnode_t *IRTnode) {
+    if (IRTnode->u.irt_cond.kind == COND_RELOP) {
+        char *op;
+        switch (IRTnode->u.irt_cond.relop) {
+            case RELOP_EQ:
+                op = "beq";
+                break;
+            case RELOP_NE:
+                op = "bne";
+                break;
+            case RELOP_LT:
+                op = "blt";
+                break;
+            case RELOP_LE:
+                op = "ble";
+                break;
+            case RELOP_GT:
+                op = "bgt";
+                break;
+            case RELOP_GE:
+                op = "bge";
+                break;
+            default:
+                assert(0);
+        }
+
+        LReg(IRTnode->son[0]->u.irt_exp.result, 1);
+        LReg(IRTnode->son[1]->u.irt_exp.result, 2);
+        printf("  %s $t1, $t2, %s\n", op, IRTnode->u.irt_cond.T);
+        printf("  b %s\n", IRTnode->u.irt_cond.F);
+    }
+    if (IRTnode->u.irt_cond.kind == COND_IS0) {
+        LReg(IRTnode->son[0]->u.irt_exp.result, 1);
+        printf("  beqz $t1, %s\n", IRTnode->u.irt_cond.F);
+        printf("  b %s\n", IRTnode->u.irt_cond.T);
+    }
+}
+
+void IRTreeRewriteFUNC(IRTnode_t *IRTnode) {
+    if (IRTnode->u.irt_func.type) {
+        func_offset = IRTnode->u.irt_func.func_offset;
+        if (strcmp(IRTnode->u.irt_func.name, "main") == 0) {
+            printf("%s:\n", IRTnode->u.irt_func.name);
+        } else {
+            printf("func_%s:\n", IRTnode->u.irt_func.name);
+        }
+        printf("  sw $ra, 0($sp)\n");
+    }
+}
+
+void IRTreeRewrite(IRTnode_t *IRTnode) {
+    // printf("Rewrite\n");
+    if (IRTnode == NULL) {
+        return ;
+    }
+    
+    // printf("IRTreeTranslate %p\n", IRTnode);
+    // printf("IRTreeRewrite %d\n", IRTnode->kind);
+
+    if (IRTnode->label_head)
+        printf("%s:\n", IRTnode->label_head);
+
+    if (IRTnode->kind == IRT_FUNC) {
+        IRTreeRewriteFUNC(IRTnode);
+    }
+
+    for (int i = 0; i < 4; i++) if (IRTnode->son[i] != NULL)
+        IRTreeRewrite(IRTnode->son[i]);
+
+    switch (IRTnode->kind) {
+        case IRT_EXP:
+            IRTreeRewriteEXP(IRTnode);
+            break;
+        case IRT_STMT:
+            IRTreeRewriteSTMT(IRTnode);
+            break;
+        case IRT_COND:
+            IRTreeRewriteCOND(IRTnode);
+            break;
+        case IRT_FUNC:
+            break;
+        default:
+            assert(0);
+    }
+
+    if (IRTnode->goto_label)
+        printf("  b %s\n", IRTnode->goto_label);
+
+    if (IRTnode->label_tail)
+        printf("%s:\n", IRTnode->label_tail);
+}
+
